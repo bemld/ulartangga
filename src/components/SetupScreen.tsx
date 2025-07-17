@@ -15,69 +15,20 @@ interface SetupScreenProps {
   onBack: () => void;
 }
 
-/**
- * Processes a given image URL to remove a solid color background.
- * It assumes the pixel at (0,0) is the background color and makes all similar pixels transparent.
- * @param imageUrl The data URL of the image to process.
- * @returns A promise that resolves with the data URL of the processed image with a transparent background.
- */
-const removeImageBackground = (imageUrl: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return reject(new Error('Tidak bisa mendapatkan konteks canvas'));
-      }
-
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-
-      // Ambil warna piksel di pojok kiri atas sebagai warna latar.
-      const bgR = data[0];
-      const bgG = data[1];
-      const bgB = data[2];
-
-      const tolerance = 30; // Toleransi untuk variasi warna (anti-aliasing, dll.)
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // Hitung perbedaan warna dari warna latar belakang.
-        const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
-        
-        // Jika warna piksel sangat mirip dengan warna latar, buat transparan.
-        if (diff < tolerance) {
-          data[i + 3] = 0; // Atur alpha menjadi 0 (transparan)
-        }
-      }
-
-      ctx.putImageData(imageData, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = (err) => {
-      console.error("Gagal memuat gambar:", err);
-      reject(new Error('Gagal memuat gambar untuk diproses.'));
-    };
-    img.src = imageUrl;
-  });
-};
-
+const ROPE_ASSETS = [
+  '/assets/rope1.png',
+  '/assets/rope2.png',
+  '/assets/rope3.png',
+];
 
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSettings, onBack }) => {
   const [playerNames, setPlayerNames] = useState<string[]>(['Kelompok 1', 'Kelompok 2']);
   const [activities, setActivities] = useState<BoardActivities>({});
-  const [snakes, setSnakes] = useState<SnakeOrLadder[]>([{ start: 23, end: 5 }, { start: 16, end: 8 }]);
+  const [snakes, setSnakes] = useState<SnakeOrLadder[]>([
+    { start: 23, end: 5, imageUrl: ROPE_ASSETS[0] }, 
+    { start: 16, end: 8, imageUrl: ROPE_ASSETS[1] }
+  ]);
   const [ladders, setLadders] = useState<SnakeOrLadder[]>([{ start: 4, end: 14 }, { start: 11, end: 21 }]);
-  const [generatingSnakeIndex, setGeneratingSnakeIndex] = useState<number | null>(null);
   
   // State for AI Activity Generation
   const [subject, setSubject] = useState('');
@@ -131,45 +82,17 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
   };
 
   const handleAddSpecialSquare = (type: 'snakes' | 'ladders') => {
-    const newItem = { start: 0, end: 0 };
-    if (type === 'snakes') setSnakes([...snakes, newItem]);
-    else setLadders([...ladders, newItem]);
+    if (type === 'snakes') {
+      const randomRope = ROPE_ASSETS[Math.floor(Math.random() * ROPE_ASSETS.length)];
+      setSnakes([...snakes, { start: 0, end: 0, imageUrl: randomRope }]);
+    } else {
+      setLadders([...ladders, { start: 0, end: 0 }]);
+    }
   };
     
   const handleRemoveSpecialSquare = (index: number, type: 'snakes' | 'ladders') => {
     if (type === 'snakes') setSnakes(snakes.filter((_, i) => i !== index));
     else setLadders(ladders.filter((_, i) => i !== index));
-  };
-
-  const handleGenerateSnakeImage = async (index: number) => {
-    if (generatingSnakeIndex !== null) return;
-    setGeneratingSnakeIndex(index);
-    try {
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-      const response = await ai.models.generateImages({
-        model: 'imagen-3.0-generate-002',
-        prompt: 'A simple, cartoon rope, like a thick climbing rope. 2D flat vector art style. The rope must be in a long, stretched-out, gently waving line shape. The entire rope must be visible. CRUCIAL: The rope must NOT be coiled, knotted, or circular. It must be elongated. Isolated on a solid plain white background. No shadows or gradients.',
-        config: {
-          numberOfImages: 1,
-          outputMimeType: 'image/png',
-        },
-      });
-
-      const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-      const initialImageUrl = `data:image/png;base64,${base64ImageBytes}`;
-      
-      const finalImageUrl = await removeImageBackground(initialImageUrl);
-      
-      const newSnakes = [...snakes];
-      newSnakes[index] = { ...newSnakes[index], imageUrl: finalImageUrl };
-      setSnakes(newSnakes);
-
-    } catch (error) {
-      console.error("Error processing rope image:", error);
-      alert("Gagal memproses gambar tali. Silakan coba lagi.");
-    } finally {
-      setGeneratingSnakeIndex(null);
-    }
   };
 
   const handleGenerateActivities = async () => {
@@ -249,7 +172,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
 
     } catch (error) {
         console.error("Error generating activities:", error);
-        alert("Gagal membuat aktivitas. Silakan coba lagi.");
+        alert("Gagal membuat aktivitas. Pastikan API Key Anda valid dan coba lagi.");
     } finally {
         setIsGeneratingActivities(false);
     }
@@ -341,6 +264,11 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
             >
                 {isGeneratingActivities ? 'Sedang Membuat Aktivitas...' : 'Buat Aktivitas dengan AI'}
             </button>
+            {!import.meta.env.VITE_API_KEY && (
+              <p className={`text-xs text-center mt-2 ${hasCustomBg ? 'text-yellow-300/80' : 'text-yellow-600'}`}>
+                Fitur AI membutuhkan API Key. Jika tombol nonaktif, pastikan API Key telah diatur.
+              </p>
+            )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -385,8 +313,6 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   onChange={(i, f, v) => handleSpecialSquareChange(i, 'snakes', f, v)} 
                   onAdd={() => handleAddSpecialSquare('snakes')} 
                   onRemove={(i) => handleRemoveSpecialSquare(i, 'snakes')}
-                  onGenerateImage={handleGenerateSnakeImage}
-                  generatingIndex={generatingSnakeIndex}
                   hasCustomBg={hasCustomBg}
               />
             </div>
@@ -431,12 +357,10 @@ interface SpecialSquareSetupProps {
     onChange: (index: number, field: 'start' | 'end', value: string) => void;
     onAdd: () => void;
     onRemove: (index: number) => void;
-    onGenerateImage?: (index: number) => void;
-    generatingIndex?: number | null;
     hasCustomBg: boolean;
 }
 
-const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, onChange, onAdd, onRemove, onGenerateImage, generatingIndex, hasCustomBg }) => {
+const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, onChange, onAdd, onRemove, hasCustomBg }) => {
     const baseTitle = title.split(' ')[0];
 
     return (
@@ -450,18 +374,6 @@ const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, o
                       <input type="number" value={item.end || ''} onChange={e => onChange(index, 'end', e.target.value)} className={`w-16 p-2 border rounded-md ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white' : 'bg-white'}`} placeholder="Ke" />
                       <button onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700 p-1 ml-auto">✕</button>
                   </div>
-                  {onGenerateImage && (
-                      <div className="flex items-center gap-2 mt-2">
-                        {item.imageUrl && <img src={item.imageUrl} alt={`Pratinjau ${baseTitle}`} className="w-10 h-10 rounded-md object-cover border" />}
-                        <button
-                            onClick={() => onGenerateImage(index)}
-                            disabled={generatingIndex !== null}
-                            className="flex-grow text-sm bg-emerald-500 text-white font-semibold rounded-md py-1.5 px-2 hover:bg-emerald-600 transition-colors disabled:bg-slate-400 disabled:cursor-wait"
-                        >
-                            {generatingIndex === index ? 'Membuat...' : `Buat Gambar ${baseTitle}`}
-                        </button>
-                      </div>
-                  )}
                 </div>
             ))}
             <button onClick={onAdd} className={`mt-1 w-full text-sm font-semibold border-2 border-dashed rounded-md py-1 transition-colors ${hasCustomBg ? 'text-slate-400 border-slate-500 hover:bg-black/20' : 'text-slate-600 border-slate-400 hover:bg-stone-200'}`}>
