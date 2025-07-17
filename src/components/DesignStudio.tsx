@@ -39,7 +39,17 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
   const [mainBgLoading, setMainBgLoading] = useState(false);
   const [containerBgLoading, setContainerBgLoading] = useState(false);
 
+  // Check if the API key is configured
+  const apiKey = import.meta.env.VITE_API_KEY;
+  const isApiKeyConfigured = !!apiKey;
+
+
   const handleGenerateImages = async (type: 'main' | 'container') => {
+    if (!isApiKeyConfigured) {
+        alert("Kunci API belum diatur. Silakan atur di pengaturan hosting Anda.");
+        return;
+    }
+      
     let prompt: string | undefined = '';
     
     if (type === 'main') {
@@ -59,7 +69,7 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
     }
 
     try {
-        const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: apiKey });
         const response = await ai.models.generateImages({
             model: 'imagen-3.0-generate-002',
             prompt: prompt,
@@ -108,6 +118,17 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
             <h1 className="text-3xl sm:text-4xl font-bold text-slate-800">Studio Desain AI</h1>
             <button onClick={onBack} className="text-slate-500 hover:text-slate-800">&larr; Kembali ke Menu</button>
         </div>
+
+        {!isApiKeyConfigured && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-r-lg" role="alert">
+                <p className="font-bold">Fitur AI Dinonaktifkan</p>
+                <p className="text-sm">
+                    Kunci API Gemini belum dikonfigurasi. Untuk mengaktifkan fitur ini, tambahkan variabel lingkungan 
+                    <code className="bg-yellow-200 text-yellow-900 font-mono text-xs px-1 py-0.5 rounded mx-1">VITE_API_KEY</code> 
+                    di pengaturan hosting Anda (misalnya di dashboard Vercel).
+                </p>
+            </div>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Main Background Section */}
@@ -123,7 +144,11 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
                     <label className="block text-sm font-medium text-slate-600 mb-1">Prompt untuk Latar Utama:</label>
                     <textarea value={mainBgPrompt} onChange={e => setMainBgPrompt(e.target.value)} placeholder="Contoh: Pemandangan gunung bersalju saat matahari terbenam" className="w-full p-2 border rounded-md" rows={2}></textarea>
                 </div>
-                <button onClick={() => handleGenerateImages('main')} disabled={mainBgLoading} className="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 disabled:bg-slate-400">
+                <button 
+                    onClick={() => handleGenerateImages('main')} 
+                    disabled={!isApiKeyConfigured || mainBgLoading} 
+                    className="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                >
                     {mainBgLoading ? 'Membuat...' : 'Buat Gambar Latar Utama'}
                 </button>
                 {mainBgResults.length > 0 && (
@@ -160,7 +185,11 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
                         ))}
                     </select>
                 </div>
-                <button onClick={() => handleGenerateImages('container')} disabled={containerBgLoading || !selectedThemeName} className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed">
+                <button 
+                    onClick={() => handleGenerateImages('container')} 
+                    disabled={!isApiKeyConfigured || containerBgLoading || !selectedThemeName} 
+                    className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                >
                     {containerBgLoading ? 'Membuat...' : 'Buat Gambar Latar Konten'}
                 </button>
                  {containerBgResults.length > 0 && (
