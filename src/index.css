@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+body {
+  font-family: 'Poppins', sans-serif;
+  transition: background-image 0.5s ease-in-out;
+}
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-caveat { font-family: 'Caveat', cursive; }
+
+/* Simple keyframe for dice roll */
+@keyframes spin {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(180deg) scale(1.2); }
+  50% { transform: rotate(360deg) scale(1); }
+  75% { transform: rotate(540deg) scale(1.2); }
+  100% { transform: rotate(720deg) scale(1); }
+}
+.dice-rolling {
+  animation: spin 0.7s ease-in-out;
+}
+.pawn-active {
+  filter: drop-shadow(0 0 10px rgb(250 204 21 / 0.9)); /* yellow-400 glow */
+  z-index: 20 !important; /* Make sure active pawn is on top */
+  transition: filter 0.3s ease-in-out;
+}
+/* Styles for the landscape orientation prompt */
+.rotate-device-overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  inset: 0;
+  background-color: rgba(23, 37, 84, 0.95); /* bg-slate-900 with opacity */
+  color: white;
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+@media (orientation: portrait) and (max-width: 1023px) {
+  body.game-active .rotate-device-overlay {
+      display: flex;
+  }
+}
+
+/* Victory Screen Animations */
+@keyframes fall {
+  from {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes trophy-drop {
+  0% { transform: translateY(-80vh) scale(0.5) rotate(-30deg); opacity: 0; }
+  60% { transform: translateY(0) scale(1.1) rotate(5deg); opacity: 1; }
+  80% { transform: translateY(-15px) scale(1.05) rotate(-2deg); }
+  100% { transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+@keyframes content-fade {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rays-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-rays-spin { animation: rays-spin 40s linear infinite; }
+.animate-trophy-drop { animation: trophy-drop 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards; }
+.animate-content-fade { animation: content-fade 0.8s ease-out 1.8s forwards; }
+.animate-content-fade-late { animation: content-fade 0.8s ease-out 2.1s forwards; }
