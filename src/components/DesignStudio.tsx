@@ -25,6 +25,16 @@ const themes = [
     settings: { mainBackground: '/assets/bg3.jpg', containerBackground: '/assets/container3.jpg' }
   },
   {
+    name: 'Jelajah Angkasa',
+    preview: '/assets/bg4.jpg',
+    settings: { mainBackground: '/assets/bg4.jpg', containerBackground: '/assets/container4.jpg' }
+  },
+  {
+    name: 'Dunia Bawah Laut',
+    preview: '/assets/bg5.jpg',
+    settings: { mainBackground: '/assets/bg5.jpg', containerBackground: '/assets/container5.jpg' }
+  },
+  {
     name: 'Default (Tanpa Tema)',
     preview: null,
     settings: { mainBackground: null, containerBackground: null }
@@ -40,7 +50,7 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-100">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-8">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-8">
         <div className="flex justify-between items-center border-b pb-4">
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-800">Studio Desain</h1>
           <button onClick={onBack} className="text-sm font-semibold flex items-center gap-1 text-sky-600 hover:text-sky-800 transition-colors">
@@ -56,7 +66,7 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
             <p className="text-slate-500 mt-1">Pilih tampilan papan dan latar belakang permainan Anda. Semua tema gratis dan siap pakai.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {themes.map((theme) => (
                 <div 
                     key={theme.name} 
