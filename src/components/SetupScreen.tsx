@@ -262,7 +262,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                 disabled={isGeneratingActivities || !subject || !topic || !grade}
                 className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-orange-700 transition-all transform hover:scale-105 shadow disabled:bg-slate-400 disabled:cursor-not-allowed disabled:transform-none"
             >
-                {isGeneratingActivities ? 'Sedang Membuat Aktivitas...' : 'Buat Aktivitas dengan AI'}
+                {isGeneratingActivities ? 'Sedang Membuat...' : 'Buat Aktivitas/Soal dengan AI'}
             </button>
             {!import.meta.env.VITE_API_KEY && (
               <p className={`text-xs text-center mt-2 ${hasCustomBg ? 'text-yellow-300/80' : 'text-yellow-600'}`}>
@@ -274,7 +274,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
           {/* Column 1: Activities Review */}
           <div>
-            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
+            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Kotak Aktivitas/Soal</h2>
             <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
               {[...Array(BOARD_SIZE)].map((_, i) => {
                 const squareNum = i + 1;
