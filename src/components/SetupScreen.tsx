@@ -272,9 +272,31 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          {/* Left Column: Players & Special Squares */}
+          {/* Column 1: Activities Review */}
+          <div>
+            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
+            <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
+              {[...Array(BOARD_SIZE)].map((_, i) => {
+                const squareNum = i + 1;
+                return (
+                  <div key={squareNum}>
+                    <label className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Kotak {squareNum}:</label>
+                    <textarea
+                      value={activities[squareNum] || ''}
+                      onChange={(e) => handleActivityChange(squareNum, e.target.value)}
+                      placeholder="Kosong (atau isi manual)"
+                      className={`w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}
+                      rows={2}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Column 2: Players & Special Squares */}
           <div className="space-y-6">
-            <h2 className={`text-2xl font-semibold -mb-2 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>2. Atur Pemain & Papan</h2>
+            <h2 className={`text-2xl font-semibold -mb-2 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>3. Atur Pemain & Papan</h2>
             {/* Players Setup */}
             <div>
               <h3 className={`text-xl font-medium mb-2 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Pemain</h3>
@@ -315,28 +337,6 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   onRemove={(i) => handleRemoveSpecialSquare(i, 'snakes')}
                   hasCustomBg={hasCustomBg}
               />
-            </div>
-          </div>
-          
-          {/* Right Column: Activities */}
-          <div>
-            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>3. Tinjau Aktivitas Kotak</h2>
-            <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
-              {[...Array(BOARD_SIZE)].map((_, i) => {
-                const squareNum = i + 1;
-                return (
-                  <div key={squareNum}>
-                    <label className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Kotak {squareNum}:</label>
-                    <textarea
-                      value={activities[squareNum] || ''}
-                      onChange={(e) => handleActivityChange(squareNum, e.target.value)}
-                      placeholder="Kosong (atau isi manual)"
-                      className={`w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}
-                      rows={2}
-                    />
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
