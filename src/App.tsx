@@ -286,8 +286,8 @@ export const App: React.FC = () => {
   const pendingQuestion = currentPlayer ? pendingQuestions[currentPlayer.id] : null;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row items-center md:items-start justify-center p-4 sm:p-6 lg:p-8 gap-6 md:gap-8">
-      <main className="w-full flex-grow">
+    <div className="h-screen w-screen overflow-hidden flex flex-col sm:flex-row">
+      <main className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-hidden">
         <GameBoard
           players={players}
           snakes={snakes}
@@ -296,7 +296,7 @@ export const App: React.FC = () => {
           visualSettings={visualSettings}
         />
       </main>
-      <aside className="w-full md:w-80 lg:w-96 flex-shrink-0">
+      <aside className="w-full sm:w-80 lg:w-96 flex-shrink-0 h-auto sm:h-full">
         {currentPlayer && (
           <GameControls
             players={players}
