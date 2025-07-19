@@ -15,18 +15,12 @@ interface SetupScreenProps {
   onBack: () => void;
 }
 
-const ROPE_ASSETS = [
-  '/assets/rope1.png',
-  '/assets/rope2.png',
-  '/assets/rope3.png',
-];
-
 export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSettings, onBack }) => {
   const [playerNames, setPlayerNames] = useState<string[]>(['Kelompok 1', 'Kelompok 2']);
   const [activities, setActivities] = useState<BoardActivities>({});
   const [snakes, setSnakes] = useState<SnakeOrLadder[]>([
-    { start: 23, end: 5, imageUrl: ROPE_ASSETS[0] }, 
-    { start: 16, end: 8, imageUrl: ROPE_ASSETS[1] }
+    { start: 23, end: 5 }, 
+    { start: 16, end: 8 }
   ]);
   const [ladders, setLadders] = useState<SnakeOrLadder[]>([{ start: 4, end: 14 }, { start: 11, end: 21 }]);
   
@@ -83,8 +77,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
 
   const handleAddSpecialSquare = (type: 'snakes' | 'ladders') => {
     if (type === 'snakes') {
-      const randomRope = ROPE_ASSETS[Math.floor(Math.random() * ROPE_ASSETS.length)];
-      setSnakes([...snakes, { start: 0, end: 0, imageUrl: randomRope }]);
+      setSnakes([...snakes, { start: 0, end: 0 }]);
     } else {
       setLadders([...ladders, { start: 0, end: 0 }]);
     }
