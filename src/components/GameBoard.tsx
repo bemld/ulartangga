@@ -101,7 +101,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
 
   return (
     // This is a flex container that gives the board padding and centers it.
-    <div className="w-full h-full flex items-center justify-center p-2 sm:p-4">
+    <div className="w-full h-full flex items-center justify-center p-2 md:p-6 lg:p-12">
       {/* This is the board itself. It's constrained to be a square that fits the available space. */}
       <div 
         className={`aspect-square w-auto h-auto max-w-full max-h-full rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
