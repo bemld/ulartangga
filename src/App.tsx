@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { GameStage, Player, BoardActivities, SnakeOrLadder, ActivityType, VisualSettings } from './types';
 import { BOARD_SIZE } from './constants';
@@ -288,7 +287,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col sm:flex-row">
-      <main className="flex-1 flex items-center justify-center overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-2 sm:p-4 overflow-hidden">
         <GameBoard
           players={players}
           snakes={snakes}
