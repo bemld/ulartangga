@@ -104,7 +104,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
       ref={boardRef}
       style={boardStyle}
     >
-      <div className="grid grid-cols-5 grid-rows-5 h-full gap-1 p-2 sm:p-4">
+      <div className="grid grid-cols-5 grid-rows-5 h-full gap-1">
         {squares.map(({ num, bgColor }) => (
           <div
             key={num}
@@ -117,7 +117,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
       </div>
       
       {/* Visual Ladders and Ropes (previously snakes) */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none p-2 sm:p-4">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         {hasPositions && ladders.map((ladder, i) => {
           const startPos = getSquareCenter(ladder.start);
           const endPos = getSquareCenter(ladder.end);
@@ -188,7 +188,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
 
 
       {/* Absolutely Positioned Pawns */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none p-2 sm:p-4">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         {hasPositions && players.map((player) => {
             const center = getSquareCenter(player.position);
 
