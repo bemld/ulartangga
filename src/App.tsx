@@ -287,7 +287,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col sm:flex-row">
-      <main className="flex-1 flex items-center justify-center overflow-hidden">
+      <main className="flex-1 flex items-center justify-center overflow-hidden py-2 sm:py-4">
         <GameBoard
           players={players}
           snakes={snakes}

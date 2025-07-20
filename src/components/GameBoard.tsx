@@ -100,11 +100,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
 
   return (
     <div 
-      className={`aspect-square w-full max-w-3xl max-h-full mx-auto p-2 sm:p-4 rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
+      className={`aspect-square w-full max-w-3xl max-h-full mx-auto rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
       ref={boardRef}
       style={boardStyle}
     >
-      <div className="grid grid-cols-5 grid-rows-5 h-full gap-1">
+      <div className="grid grid-cols-5 grid-rows-5 h-full gap-1 p-2 sm:p-4">
         {squares.map(({ num, bgColor }) => (
           <div
             key={num}
@@ -117,7 +117,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
       </div>
       
       {/* Visual Ladders and Ropes (previously snakes) */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none p-2 sm:p-4">
         {hasPositions && ladders.map((ladder, i) => {
           const startPos = getSquareCenter(ladder.start);
           const endPos = getSquareCenter(ladder.end);
@@ -188,30 +188,32 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
 
 
       {/* Absolutely Positioned Pawns */}
-      {hasPositions && players.map((player) => {
-          const center = getSquareCenter(player.position);
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none p-2 sm:p-4">
+        {hasPositions && players.map((player) => {
+            const center = getSquareCenter(player.position);
 
-          const playersOnSameSquare = players.filter(p => p.position === player.position);
-          const playerIndexOnSquare = playersOnSameSquare.findIndex(p => p.id === player.id);
-          
-          let offsetX = 0;
-          let offsetY = 0;
-          if (playersOnSameSquare.length > 1) {
-            const angle = (playerIndexOnSquare / playersOnSameSquare.length) * 2 * Math.PI;
-            const radius = 12; // Radius to arrange pawns in a circle
-            offsetX = Math.cos(angle) * radius;
-            offsetY = Math.sin(angle) * radius;
-          }
+            const playersOnSameSquare = players.filter(p => p.position === player.position);
+            const playerIndexOnSquare = playersOnSameSquare.findIndex(p => p.id === player.id);
+            
+            let offsetX = 0;
+            let offsetY = 0;
+            if (playersOnSameSquare.length > 1) {
+              const angle = (playerIndexOnSquare / playersOnSameSquare.length) * 2 * Math.PI;
+              const radius = 12; // Radius to arrange pawns in a circle
+              offsetX = Math.cos(angle) * radius;
+              offsetY = Math.sin(angle) * radius;
+            }
 
-          return (
-            <PlayerPawn
-              key={player.id}
-              player={player}
-              position={{ x: center.x + offsetX, y: center.y + offsetY }}
-              isActive={player.id === currentPlayerId}
-            />
-          );
-        })}
+            return (
+              <PlayerPawn
+                key={player.id}
+                player={player}
+                position={{ x: center.x + offsetX, y: center.y + offsetY }}
+                isActive={player.id === currentPlayerId}
+              />
+            );
+          })}
+        </div>
     </div>
   );
 };
