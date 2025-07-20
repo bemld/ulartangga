@@ -100,7 +100,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
 
   return (
     <div 
-      className={`aspect-square w-full max-w-3xl mx-auto p-2 sm:p-4 rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
+      className={`aspect-square w-full max-w-3xl max-h-full mx-auto p-2 sm:p-4 rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
       ref={boardRef}
       style={boardStyle}
     >
