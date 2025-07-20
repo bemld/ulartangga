@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import type { Player, SnakeOrLadder, VisualSettings } from '../types';
 import { BOARD_SIZE } from '../constants';
@@ -99,121 +100,125 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
   const customBoardClasses = "border-white/20";
 
   return (
-    <div 
-      className={`aspect-square w-full max-w-3xl max-h-full mx-auto rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
-      ref={boardRef}
-      style={boardStyle}
-    >
-      <div className="grid grid-cols-5 grid-rows-5 h-full gap-1">
-        {squares.map(({ num, bgColor }) => (
-          <div
-            key={num}
-            id={`square-${num}`}
-            className={`rounded-md flex items-start justify-end p-2 ${bgColor} border ${visualSettings.containerBackground ? 'border-white/20' : 'border-stone-300/50'} shadow-inner`}
-          >
-            <span className={`font-bold text-sm sm:text-lg ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>{num}</span>
-          </div>
-        ))}
-      </div>
-      
-      {/* Visual Ladders and Ropes (previously snakes) */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        {hasPositions && ladders.map((ladder, i) => {
-          const startPos = getSquareCenter(ladder.start);
-          const endPos = getSquareCenter(ladder.end);
-          const deltaX = endPos.x - startPos.x;
-          const deltaY = endPos.y - startPos.y;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) - 90;
-          
-          const style = {
-            width: '24px',
-            height: `${distance}px`,
-            left: `${(startPos.x + endPos.x) / 2}px`,
-            top: `${(startPos.y + endPos.y) / 2}px`,
-            transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-          };
-          return <LadderIcon key={`ladder-${i}`} style={style} />;
-        })}
-
-        {hasPositions && snakes.map((snake, i) => {
-          const startPos = getSquareCenter(snake.start);
-          const endPos = getSquareCenter(snake.end);
-          
-          if (!startPos || !endPos || (startPos.x === 0 && startPos.y === 0)) {
-            return null;
-          }
-
-          const deltaX = endPos.x - startPos.x;
-          const deltaY = endPos.y - startPos.y;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-          if (snake.imageUrl) {
-            // Set rope thickness to be a proportion of a square's width for a nice visual balance
-            const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.4 : 40; 
-            const imageStyle: React.CSSProperties = {
-              position: 'absolute',
-              width: `${distance}px`,
-              height: `${ropeThickness}px`, // Dynamic height based on square size
-              left: `${(startPos.x + endPos.x) / 2}px`,
-              top: `${(startPos.y + endPos.y) / 2}px`,
-              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-              objectFit: 'fill', // Stretch the image to fill the container dimensions
-              filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))',
-            };
-            return (
-              <img
-                key={`rope-img-${i}`}
-                src={snake.imageUrl}
-                alt={`Tali dari ${snake.start} ke ${snake.end}`}
-                style={imageStyle}
-              />
-            );
-          } else {
-            // Set rope icon thickness to be a proportion of a square's width
-            const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.2 : 20;
-            const iconStyle = {
-              width: `${distance}px`,
-              height: `${ropeThickness}px`,
-              left: `${(startPos.x + endPos.x) / 2}px`,
-              top: `${(startPos.y + endPos.y) / 2}px`,
-              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-            };
-            const isFlipped = startPos.x > endPos.x;
-            return <SnakeIcon key={`rope-icon-${i}`} style={iconStyle} isFlipped={isFlipped} />;
-          }
-        })}
-      </div>
-
-
-      {/* Absolutely Positioned Pawns */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        {hasPositions && players.map((player) => {
-            const center = getSquareCenter(player.position);
-
-            const playersOnSameSquare = players.filter(p => p.position === player.position);
-            const playerIndexOnSquare = playersOnSameSquare.findIndex(p => p.id === player.id);
+    // This is a flex container that gives the board padding and centers it.
+    <div className="w-full h-full flex items-center justify-center p-2 sm:p-4">
+      {/* This is the board itself. It's constrained to be a square that fits the available space. */}
+      <div 
+        className={`aspect-square w-auto h-auto max-w-full max-h-full rounded-2xl shadow-xl shadow-black/30 border-2 relative ${visualSettings.containerBackground ? customBoardClasses : defaultBoardClasses}`}
+        ref={boardRef}
+        style={boardStyle}
+      >
+        <div className="grid grid-cols-5 grid-rows-5 h-full gap-1">
+          {squares.map(({ num, bgColor }) => (
+            <div
+              key={num}
+              id={`square-${num}`}
+              className={`rounded-md flex items-start justify-end p-2 ${bgColor} border ${visualSettings.containerBackground ? 'border-white/20' : 'border-stone-300/50'} shadow-inner`}
+            >
+              <span className={`font-bold text-sm sm:text-lg ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>{num}</span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Visual Ladders and Ropes (previously snakes) */}
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          {hasPositions && ladders.map((ladder, i) => {
+            const startPos = getSquareCenter(ladder.start);
+            const endPos = getSquareCenter(ladder.end);
+            const deltaX = endPos.x - startPos.x;
+            const deltaY = endPos.y - startPos.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) - 90;
             
-            let offsetX = 0;
-            let offsetY = 0;
-            if (playersOnSameSquare.length > 1) {
-              const angle = (playerIndexOnSquare / playersOnSameSquare.length) * 2 * Math.PI;
-              const radius = 12; // Radius to arrange pawns in a circle
-              offsetX = Math.cos(angle) * radius;
-              offsetY = Math.sin(angle) * radius;
+            const style = {
+              width: '24px',
+              height: `${distance}px`,
+              left: `${(startPos.x + endPos.x) / 2}px`,
+              top: `${(startPos.y + endPos.y) / 2}px`,
+              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+            };
+            return <LadderIcon key={`ladder-${i}`} style={style} />;
+          })}
+
+          {hasPositions && snakes.map((snake, i) => {
+            const startPos = getSquareCenter(snake.start);
+            const endPos = getSquareCenter(snake.end);
+            
+            if (!startPos || !endPos || (startPos.x === 0 && startPos.y === 0)) {
+              return null;
             }
 
-            return (
-              <PlayerPawn
-                key={player.id}
-                player={player}
-                position={{ x: center.x + offsetX, y: center.y + offsetY }}
-                isActive={player.id === currentPlayerId}
-              />
-            );
+            const deltaX = endPos.x - startPos.x;
+            const deltaY = endPos.y - startPos.y;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+            if (snake.imageUrl) {
+              // Set rope thickness to be a proportion of a square's width for a nice visual balance
+              const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.4 : 40; 
+              const imageStyle: React.CSSProperties = {
+                position: 'absolute',
+                width: `${distance}px`,
+                height: `${ropeThickness}px`, // Dynamic height based on square size
+                left: `${(startPos.x + endPos.x) / 2}px`,
+                top: `${(startPos.y + endPos.y) / 2}px`,
+                transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                objectFit: 'fill', // Stretch the image to fill the container dimensions
+                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))',
+              };
+              return (
+                <img
+                  key={`rope-img-${i}`}
+                  src={snake.imageUrl}
+                  alt={`Tali dari ${snake.start} ke ${snake.end}`}
+                  style={imageStyle}
+                />
+              );
+            } else {
+              // Set rope icon thickness to be a proportion of a square's width
+              const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.2 : 20;
+              const iconStyle = {
+                width: `${distance}px`,
+                height: `${ropeThickness}px`,
+                left: `${(startPos.x + endPos.x) / 2}px`,
+                top: `${(startPos.y + endPos.y) / 2}px`,
+                transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+              };
+              const isFlipped = startPos.x > endPos.x;
+              return <SnakeIcon key={`rope-icon-${i}`} style={iconStyle} isFlipped={isFlipped} />;
+            }
           })}
         </div>
+
+
+        {/* Absolutely Positioned Pawns */}
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          {hasPositions && players.map((player) => {
+              const center = getSquareCenter(player.position);
+
+              const playersOnSameSquare = players.filter(p => p.position === player.position);
+              const playerIndexOnSquare = playersOnSameSquare.findIndex(p => p.id === player.id);
+              
+              let offsetX = 0;
+              let offsetY = 0;
+              if (playersOnSameSquare.length > 1) {
+                const angle = (playerIndexOnSquare / playersOnSameSquare.length) * 2 * Math.PI;
+                const radius = 12; // Radius to arrange pawns in a circle
+                offsetX = Math.cos(angle) * radius;
+                offsetY = Math.sin(angle) * radius;
+              }
+
+              return (
+                <PlayerPawn
+                  key={player.id}
+                  player={player}
+                  position={{ x: center.x + offsetX, y: center.y + offsetY }}
+                  isActive={player.id === currentPlayerId}
+                />
+              );
+            })}
+          </div>
+      </div>
     </div>
   );
 };
