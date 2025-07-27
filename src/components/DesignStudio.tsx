@@ -10,34 +10,34 @@ interface DesignStudioProps {
 // Definisikan tema statis dengan path ke aset di folder public
 const themes = [
   {
-    name: 'Hutan Fantasi',
+    name: 'Default (Tanpa Tema)',
+    preview: null,
+    settings: { mainBackground: null, containerBackground: null }
+  },
+  {
+    name: 'Tema 1',
     preview: '/assets/bg1.jpg',
     settings: { mainBackground: '/assets/bg1.jpg', containerBackground: '/assets/container1.jpg' }
   },
   {
-    name: 'Kayu Klasik',
+    name: 'Tema 2',
     preview: '/assets/bg2.jpg',
     settings: { mainBackground: '/assets/bg2.jpg', containerBackground: '/assets/container2.jpg' }
   },
   {
-    name: 'Peta Petualangan',
+    name: 'Tema 3',
     preview: '/assets/bg3.jpg',
     settings: { mainBackground: '/assets/bg3.jpg', containerBackground: '/assets/container3.jpg' }
   },
   {
-    name: 'Jelajah Angkasa',
+    name: 'Tema 4',
     preview: '/assets/bg4.jpg',
     settings: { mainBackground: '/assets/bg4.jpg', containerBackground: '/assets/container4.jpg' }
   },
   {
-    name: 'Dunia Bawah Laut',
+    name: 'Tema 5',
     preview: '/assets/bg5.jpg',
     settings: { mainBackground: '/assets/bg5.jpg', containerBackground: '/assets/container5.jpg' }
-  },
-  {
-    name: 'Default (Tanpa Tema)',
-    preview: null,
-    settings: { mainBackground: null, containerBackground: null }
   },
 ];
 
