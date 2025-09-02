@@ -57,10 +57,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
         </div>
       </main>
        <footer className="w-full text-center mt-8">
-            <p className="text-slate-600 font-caveat text-xl tracking-wider drop-shadow-md">
+            <p className="text-white font-caveat text-xl tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
                 Created By Besa MLD
             </p>
-            <p className="text-slate-500 font-caveat text-base tracking-wider drop-shadow-md">
+            <p className="text-slate-200 font-caveat text-base tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
                 Didukung AI untuk pembelajaran yang menyenangkan.
             </p>
         </footer>
