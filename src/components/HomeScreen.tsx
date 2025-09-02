@@ -58,7 +58,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
       </main>
        <footer className="w-full text-center mt-8">
             <p className="text-slate-600 font-caveat text-xl tracking-wider drop-shadow-md">
-                Dibuat oleh Besa MLD
+                Created By Besa MLD
             </p>
             <p className="text-slate-500 font-caveat text-base tracking-wider drop-shadow-md">
                 Didukung AI untuk pembelajaran yang menyenangkan.
