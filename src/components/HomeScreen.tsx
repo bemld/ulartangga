@@ -13,7 +13,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-      <div 
+      <main 
         className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${defaultClasses}`}
       >
         <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm">
@@ -55,12 +55,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
             </div>
 
         </div>
-      </div>
-       <footer className="absolute bottom-4 w-full text-center">
-            <p className="text-white/80 font-caveat text-xl tracking-wider drop-shadow-md">
+      </main>
+       <footer className="w-full text-center mt-8">
+            <p className="text-slate-600 font-caveat text-xl tracking-wider drop-shadow-md">
                 Dibuat oleh Besa MLD
             </p>
-            <p className="text-white/60 font-caveat text-base tracking-wider drop-shadow-md">
+            <p className="text-slate-500 font-caveat text-base tracking-wider drop-shadow-md">
                 Didukung AI untuk pembelajaran yang menyenangkan.
             </p>
         </footer>
