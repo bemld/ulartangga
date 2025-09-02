@@ -56,8 +56,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
 
         </div>
       </div>
-       <footer className="absolute bottom-4 text-white/80 font-caveat text-xl tracking-wider drop-shadow-md">
-            Dibuat dengan AI untuk pembelajaran yang menyenangkan.
+       <footer className="absolute bottom-4 w-full text-center">
+            <p className="text-white/80 font-caveat text-xl tracking-wider drop-shadow-md">
+                Dibuat oleh Besa MLD
+            </p>
+            <p className="text-white/60 font-caveat text-base tracking-wider drop-shadow-md">
+                Didukung AI untuk pembelajaran yang menyenangkan.
+            </p>
         </footer>
     </div>
   );
