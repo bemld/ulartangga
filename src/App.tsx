@@ -14,8 +14,8 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 const VISUAL_SETTINGS_KEY = 'tanggaIlmuVisualSettings';
 
 const initialVisualSettings: VisualSettings = {
-  mainBackground: null,
-  containerBackground: null,
+  mainBackground: '/assets/bg1.jpg',
+  containerBackground: '/assets/container1.jpg',
 };
 
 export const App: React.FC = () => {
