@@ -17,7 +17,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
         className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${defaultClasses}`}
       >
         <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm">
-          Tangga Ilmu
+          Smart Play
         </h1>
         <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 font-poppins drop-shadow-sm">
           Ubah pelajaran di kelas menjadi petualangan seru! Buat papan permainan Ular Tangga edukatif yang disesuaikan dengan mata pelajaran, materi, dan tingkat kelas Anda.
@@ -57,10 +57,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
         </div>
       </main>
        <footer className="w-full text-center mt-8">
-            <p className="text-white font-caveat text-xl tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
+            <p className="text-white font-caveat text-2xl tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
                 Created By Besa MLD
             </p>
-            <p className="text-slate-200 font-caveat text-base tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
+            <p className="text-slate-200 font-caveat text-lg tracking-wider" style={{ textShadow: '0 2px 4px rgba(0, 0, 0, 0.6)' }}>
                 Didukung AI untuk pembelajaran yang menyenangkan.
             </p>
         </footer>

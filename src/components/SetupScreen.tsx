@@ -201,7 +201,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
             </svg>
             Kembali
           </button>
-          <h1 className="text-4xl sm:text-5xl font-bold font-poppins text-slate-800">Tangga Ilmu</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold font-poppins text-slate-800">Smart Play</h1>
           <p className="mt-2 text-lg text-slate-500">Atur Permainan Edukatif Anda</p>
         </div>
 
