@@ -52,7 +52,7 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-100">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-8">
         <div className="flex justify-between items-center border-b pb-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-800">Studio Desain</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-800">Atur Tema</h1>
           <button onClick={onBack} className="text-sm font-semibold flex items-center gap-1 text-sky-600 hover:text-sky-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />

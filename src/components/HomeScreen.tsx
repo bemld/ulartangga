@@ -32,7 +32,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
                     onClick={onStartDesign}
                     className="bg-emerald-600 text-white font-bold text-xl sm:text-2xl py-4 px-10 rounded-full hover:bg-emerald-700 transition-all transform hover:scale-110 shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-300"
                 >
-                    Studio Desain
+                    Atur Tema
                 </button>
             </div>
 
