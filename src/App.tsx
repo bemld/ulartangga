@@ -34,18 +34,16 @@ export const App: React.FC = () => {
   const [canRoll, setCanRoll] = useState(true);
 
   const [activityType, setActivityType] = useState<ActivityType>('psychomotor');
-  const [pendingQuestions, setPendingQuestions] = useState<Record<number, string | null>>({});
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   
   const [visualSettings, setVisualSettings] = useState<VisualSettings>(initialVisualSettings);
 
   useEffect(() => {
     try {
       const savedSettings = localStorage.getItem(VISUAL_SETTINGS_KEY);
-      if (savedSettings) {
-        setVisualSettings(JSON.parse(savedSettings));
-      }
+      if (savedSettings) setVisualSettings(JSON.parse(savedSettings));
     } catch (error) {
-      console.error("Failed to load visual settings from localStorage", error);
+      console.error("Failed to load visual settings", error);
     }
   }, []);
 
@@ -74,17 +72,9 @@ export const App: React.FC = () => {
     try {
       localStorage.setItem(VISUAL_SETTINGS_KEY, JSON.stringify(newSettings));
     } catch (error) {
-      console.error("Failed to save visual settings to localStorage", error);
+      console.error("Failed to save settings", error);
     }
     setGameStage(GameStage.Home);
-  }, []);
-
-  const handleGoToSetup = useCallback(() => {
-    setGameStage(GameStage.Setup);
-  }, []);
-
-  const handleGoToDesign = useCallback(() => {
-    setGameStage(GameStage.Design);
   }, []);
 
   const handleStartGame = useCallback((
@@ -107,21 +97,8 @@ export const App: React.FC = () => {
     setActiveActivity(null);
     setWinner(null);
     setCanRoll(true);
-    setPendingQuestions({});
+    setPendingQuestion(null);
     setGameStage(GameStage.Playing);
-  }, []);
-
-  const handleResetGame = useCallback(() => {
-    setGameStage(GameStage.Setup);
-  }, []);
-  
-  const handleNewGame = useCallback(() => {
-    setGameStage(GameStage.Home);
-    setPlayers([]);
-    setActivities({});
-    setSnakes([]);
-    setLadders([]);
-    setPendingQuestions({});
   }, []);
 
   const movePlayerAlongPath = async (path: number[], playerIndex: number) => {
@@ -143,17 +120,20 @@ export const App: React.FC = () => {
     setCanRoll(false);
 
     if (gameType === GameType.ChallengeTrail) {
-      // Logic for Challenge Trail: Just open the activity for the current square
+      // Logic for Challenge Trail: Just show the question
       const currentPlayer = players[currentPlayerIndex];
       const activityContent = activities[currentPlayer.position];
       if (activityContent) {
-          setActiveActivity({ square: currentPlayer.position, content: activityContent });
-          setPendingQuestions(prev => ({ ...prev, [currentPlayer.id]: activityContent }));
+          setPendingQuestion(activityContent);
+      } else {
+          // If no activity, just go to next group (should not happen with AI generation)
+          setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
+          setCanRoll(true);
       }
       return;
     }
 
-    // Standard Snakes & Ladders Logic
+    // --- MODE ULAR TANGGA KLASIK ---
     setIsRolling(true);
     const roll = Math.floor(Math.random() * 6) + 1;
     setDiceResult(roll);
@@ -180,12 +160,12 @@ export const App: React.FC = () => {
     if (path.length > 0) await movePlayerAlongPath(path, currentPlayerIndex);
 
     if (landPosition === BOARD_SIZE) {
-        await delay(500);
         setWinner(players[currentPlayerIndex]);
         setGameStage(GameStage.Finished);
         return;
     }
 
+    // Cek Ular dan Tangga
     let finalPosition = landPosition;
     const ladder = ladders.find(l => l.start === landPosition);
     const snake = snakes.find(s => s.start === landPosition);
@@ -194,114 +174,82 @@ export const App: React.FC = () => {
     else if (snake) finalPosition = snake.end;
     
     if (finalPosition !== landPosition) {
-        await delay(200);
+        await delay(500);
         setPlayers(currentPlayers => {
             const newPlayers = [...currentPlayers];
             if (newPlayers[currentPlayerIndex]) newPlayers[currentPlayerIndex].position = finalPosition;
             return newPlayers;
         });
-        await delay(1000);
+        await delay(500);
     }
     
+    // Cek Aktivitas
     const activityContent = activities[finalPosition];
     if (activityContent) {
-        setActiveActivity({ square: finalPosition, content: activityContent });
-        if (activityType === 'cognitive') {
-            setPendingQuestions(prev => ({ ...prev, [currentPlayer.id]: activityContent }));
-        }
-    }
-
-    if (activityType === 'cognitive') {
-        setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
-        setCanRoll(true);
+        setPendingQuestion(activityContent);
     } else {
-        if (!activityContent) {
-            setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
-            setCanRoll(true);
-        }
-    }
-  }, [canRoll, isRolling, players, currentPlayerIndex, activities, ladders, snakes, activityType, gameType]);
-
-  const handleCloseModal = () => {
-    setActiveActivity(null);
-    if (gameType === GameType.SnakesLadders && activityType === 'psychomotor') {
-        setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+        // Pindah giliran jika tidak ada aktivitas
+        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
         setCanRoll(true);
     }
-  };
+  }, [canRoll, isRolling, players, currentPlayerIndex, activities, ladders, snakes, gameType]);
 
   const handleAnswerCorrect = useCallback(async () => {
     const currentPlayer = players[currentPlayerIndex];
     if (!currentPlayer) return;
 
-    setPendingQuestions(prev => ({ ...prev, [currentPlayer.id]: null }));
+    setPendingQuestion(null);
     
     if (gameType === GameType.ChallengeTrail) {
-      const currentPos = currentPlayer.position;
-      const targetPos = currentPos + 1;
-      const maxPos = 9;
-
-      if (currentPos < maxPos) {
+      const targetPos = currentPlayer.position + 1;
+      if (targetPos <= 9) {
         await movePlayerAlongPath([targetPos], currentPlayerIndex);
-        setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+        setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
         setCanRoll(true);
       } else {
-        // Winner reached 9
         setWinner(currentPlayer);
         setGameStage(GameStage.Finished);
       }
     } else {
-      // Snakes and ladders logic
+      // Ular Tangga: Berhasil menjawab berarti tetap di posisi sekarang
+      setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
       setCanRoll(true);
     }
   }, [players, currentPlayerIndex, gameType]);
   
   const handleAnswerIncorrect = useCallback(() => {
-    setCurrentPlayerIndex((prevIndex) => (prevIndex + 1) % players.length);
+    setPendingQuestion(null);
+    setCurrentPlayerIndex((prev) => (prev + 1) % players.length);
     setCanRoll(true);
+    // Jika salah di Ular Tangga, mungkin bisa dibuat mundur, tapi defaultnya tetap di tempat
   }, [players.length]);
 
-
-  if (gameStage === GameStage.Home) {
-    return <HomeScreen onStartSetup={handleGoToSetup} onStartDesign={handleGoToDesign} visualSettings={visualSettings} />;
-  }
-  
-  if (gameStage === GameStage.Design) {
-    return <DesignStudio initialSettings={visualSettings} onSave={handleSaveSettings} onBack={() => setGameStage(GameStage.Home)} />;
-  }
-
-  if (gameStage === GameStage.Setup) {
-    return <SetupScreen onStartGame={handleStartGame} visualSettings={visualSettings} onBack={handleNewGame} />;
-  }
-
-  if (gameStage === GameStage.Finished && winner) {
-    return <VictoryScreen winner={winner} onNewGame={handleNewGame} onResetGame={handleResetGame} />;
-  }
-
-  const currentPlayer = players.length > 0 ? players[currentPlayerIndex] : null;
-  const pendingQuestion = currentPlayer ? pendingQuestions[currentPlayer.id] : null;
+  if (gameStage === GameStage.Home) return <HomeScreen onStartSetup={() => setGameStage(GameStage.Setup)} onStartDesign={() => setGameStage(GameStage.Design)} visualSettings={visualSettings} />;
+  if (gameStage === GameStage.Design) return <DesignStudio initialSettings={visualSettings} onSave={handleSaveSettings} onBack={() => setGameStage(GameStage.Home)} />;
+  if (gameStage === GameStage.Setup) return <SetupScreen onStartGame={handleStartGame} visualSettings={visualSettings} onBack={() => setGameStage(GameStage.Home)} />;
+  if (gameStage === GameStage.Finished && winner) return <VictoryScreen winner={winner} onNewGame={() => setGameStage(GameStage.Home)} onResetGame={() => setGameStage(GameStage.Setup)} />;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row items-center md:items-start justify-center p-4 sm:p-6 lg:p-8 gap-6 md:gap-8">
+    <div className="min-h-screen flex flex-col md:flex-row items-center md:items-start justify-center p-4 gap-6">
       <main className="w-full flex-grow">
         <GameBoard
           gameType={gameType}
           players={players}
           snakes={snakes}
           ladders={ladders}
-          currentPlayerId={currentPlayer?.id ?? -1}
+          currentPlayerId={players[currentPlayerIndex]?.id ?? -1}
           visualSettings={visualSettings}
         />
       </main>
       <aside className="w-full md:w-80 lg:w-96 flex-shrink-0">
-        {currentPlayer && (
+        {players[currentPlayerIndex] && (
           <GameControls
             gameType={gameType}
             players={players}
-            currentPlayer={currentPlayer}
+            currentPlayer={players[currentPlayerIndex]}
             onRollDice={handleRollDice}
-            onReset={handleResetGame}
-            onGoHome={handleNewGame}
+            onReset={() => setGameStage(GameStage.Setup)}
+            onGoHome={() => setGameStage(GameStage.Home)}
             diceResult={diceResult}
             isRolling={isRolling}
             canRoll={canRoll}
@@ -312,13 +260,6 @@ export const App: React.FC = () => {
           />
         )}
       </aside>
-      {activeActivity && (
-        <ActivityModal
-          activity={activeActivity.content}
-          squareNumber={activeActivity.square}
-          onClose={handleCloseModal}
-        />
-      )}
     </div>
   );
 };
