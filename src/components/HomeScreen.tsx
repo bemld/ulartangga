@@ -2,12 +2,13 @@ import React from 'react';
 import type { VisualSettings } from '../types';
 
 interface HomeScreenProps {
-  onStartSetup: () => void;
+  onStartSnakeLadder: () => void;
+  onStartLevelUp: () => void;
   onStartDesign: () => void;
   visualSettings: VisualSettings;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDesign, visualSettings }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onStartLevelUp, onStartDesign, visualSettings }) => {
   
   const containerStyle: React.CSSProperties = visualSettings.containerBackground
     ? { 
@@ -22,44 +23,58 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center relative">
       <div 
-        className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${!visualSettings.containerBackground ? defaultClasses : ''}`}
+        className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-5xl w-full border-2 border-stone-200/50 ${!visualSettings.containerBackground ? defaultClasses : ''}`}
         style={containerStyle}
       >
         <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
           Tangga Ilmu
         </h1>
         <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
-          Ubah pelajaran di kelas menjadi petualangan seru! Buat papan permainan Ular Tangga edukatif yang disesuaikan dengan mata pelajaran, materi, dan tingkat kelas Anda.
+          Pilih petualangan belajar Anda!
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6">
+        <div className="flex flex-col md:flex-row justify-center items-stretch gap-6">
             
-            {/* --- Step 1 --- */}
-            <div className="flex flex-col items-center">
-                <span className={`font-caveat text-xl mb-1 ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>Langkah 1</span>
+            {/* --- Game 1: Ular Tangga --- */}
+            <div className={`flex-1 p-6 rounded-xl border-2 transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30 border-white/20' : 'bg-white border-stone-200'}`}>
+                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Ular Tangga Klasik</h2>
+                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Permainan dadu klasik dengan Tali dan Tangga. Cocok untuk review materi santai.
+                </p>
                 <button
-                    onClick={onStartDesign}
-                    className="bg-emerald-600 text-white font-bold text-xl sm:text-2xl py-4 px-10 rounded-full hover:bg-emerald-700 transition-all transform hover:scale-110 shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-300"
+                    onClick={onStartSnakeLadder}
+                    className="w-full bg-sky-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-sky-700 shadow-lg"
                 >
-                    Studio Desain
+                    Main Ular Tangga
                 </button>
             </div>
 
-            {/* --- Arrow --- */}
-            <div className="sm:mt-8">
-                <svg xmlns="http://www.w3.org/2000/svg" className={`h-10 w-10 sm:h-12 sm:w-12 transform sm:rotate-0 rotate-90 ${visualSettings.containerBackground ? 'text-white/70' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-            </div>
-
-            {/* --- Step 2 --- */}
-            <div className="flex flex-col items-center">
-                <span className={`font-caveat text-xl mb-1 ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>Langkah 2</span>
+            {/* --- Game 2: Level Up (NEW) --- */}
+            <div className={`flex-1 p-6 rounded-xl border-2 border-yellow-400/50 relative overflow-hidden transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30' : 'bg-white'}`}>
+                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">BARU!</div>
+                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Level Up Adventure</h2>
+                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Taklukkan 9 Level bertingkat. Tantangan makin sulit hingga mencapai puncak!
+                </p>
                 <button
-                    onClick={onStartSetup}
-                    className="bg-sky-600 text-white font-bold text-xl sm:text-2xl py-4 px-10 rounded-full hover:bg-sky-700 transition-all transform hover:scale-110 shadow-xl focus:outline-none focus:ring-4 focus:ring-sky-300"
+                    onClick={onStartLevelUp}
+                    className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-orange-700 shadow-lg"
                 >
-                    Siapkan Permainan Baru
+                    Main Level Up
+                </button>
+            </div>
+             
+             {/* --- Design Studio --- */}
+            <div className={`flex-1 p-6 rounded-xl border-2 transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30 border-white/20' : 'bg-white border-stone-200'}`}>
+                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Studio Desain</h2>
+                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Kustomisasi tampilan papan dan latar belakang permainan agar lebih menarik.
+                </p>
+                <button
+                    onClick={onStartDesign}
+                    className="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-emerald-700 shadow-lg"
+                >
+                    Atur Desain
                 </button>
             </div>
 

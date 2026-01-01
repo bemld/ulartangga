@@ -3,20 +3,19 @@ export enum GameStage {
   Setup = 'setup',
   Playing = 'playing',
   Finished = 'finished',
-  Design = 'design', // Halaman baru untuk admin/desainer
+  Design = 'design',
 }
 
 export interface Player {
   id: number;
   name: string;
-  position: number;
+  position: number; // Dalam Level Up, ini berarti Level saat ini (1-9)
   color: string;
 }
 
 export interface SnakeOrLadder {
   start: number;
   end: number;
-  // imageUrl removed - we use procedural SVG for ropes now
 }
 
 export type BoardActivities = Record<number, string>;
@@ -27,3 +26,13 @@ export interface VisualSettings {
   mainBackground: string | null;
   containerBackground: string | null;
 }
+
+// --- Tipe Baru untuk Level Up Game ---
+
+export interface LevelTask {
+  level: number;
+  difficulty: string;
+  content: string;
+}
+
+export type LevelContent = Record<number, LevelTask>;

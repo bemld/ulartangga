@@ -3,6 +3,7 @@ import { VisualSettings } from './types';
 import { HomeScreen } from './components/HomeScreen';
 import { DesignStudio } from './components/DesignStudio';
 import { SnakeLadderGame } from './components/SnakeLadderGame';
+import { LevelUpGame } from './components/LevelUpGame'; // Komponen Game Baru
 
 const VISUAL_SETTINGS_KEY = 'tanggaIlmuVisualSettings';
 
@@ -12,7 +13,7 @@ const initialVisualSettings: VisualSettings = {
 };
 
 // Define the top-level views available in the app
-type AppView = 'home' | 'design' | 'game-snake-ladder';
+type AppView = 'home' | 'design' | 'game-snake-ladder' | 'game-level-up';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('home');
@@ -65,13 +66,18 @@ export const App: React.FC = () => {
     setCurrentView('game-snake-ladder');
   }, []);
 
+  const startLevelUpGame = useCallback(() => {
+    setCurrentView('game-level-up');
+  }, []);
+
 
   // --- Render Views ---
 
   if (currentView === 'home') {
     return (
       <HomeScreen 
-        onStartSetup={startSnakeLadderGame} // Currently points to Snake Ladder
+        onStartSnakeLadder={startSnakeLadderGame}
+        onStartLevelUp={startLevelUpGame}
         onStartDesign={navigateToDesign} 
         visualSettings={visualSettings} 
       />
@@ -91,6 +97,15 @@ export const App: React.FC = () => {
   if (currentView === 'game-snake-ladder') {
     return (
       <SnakeLadderGame 
+        visualSettings={visualSettings}
+        onBackToMenu={navigateToHome}
+      />
+    );
+  }
+
+  if (currentView === 'game-level-up') {
+    return (
+      <LevelUpGame 
         visualSettings={visualSettings}
         onBackToMenu={navigateToHome}
       />
