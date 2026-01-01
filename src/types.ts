@@ -16,7 +16,7 @@ export interface Player {
 export interface SnakeOrLadder {
   start: number;
   end: number;
-  imageUrl?: string; // To store the generated snake image
+  // imageUrl removed - we use procedural SVG for ropes now
 }
 
 export type BoardActivities = Record<number, string>;

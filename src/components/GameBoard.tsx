@@ -149,40 +149,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
           const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
           const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
-          if (snake.imageUrl) {
-            // Set rope thickness to be a proportion of a square's width for a nice visual balance
-            const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.4 : 40; 
-            const imageStyle: React.CSSProperties = {
-              position: 'absolute',
-              width: `${distance}px`,
-              height: `${ropeThickness}px`, // Dynamic height based on square size
-              left: `${(startPos.x + endPos.x) / 2}px`,
-              top: `${(startPos.y + endPos.y) / 2}px`,
-              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-              objectFit: 'fill', // Stretch the image to fill the container dimensions
-              filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))',
-            };
-            return (
-              <img
-                key={`rope-img-${i}`}
-                src={snake.imageUrl}
-                alt={`Tali dari ${snake.start} ke ${snake.end}`}
-                style={imageStyle}
-              />
-            );
-          } else {
-            // Set rope icon thickness to be a proportion of a square's width
-            const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.2 : 20;
-            const iconStyle = {
-              width: `${distance}px`,
-              height: `${ropeThickness}px`,
-              left: `${(startPos.x + endPos.x) / 2}px`,
-              top: `${(startPos.y + endPos.y) / 2}px`,
-              transform: `translate(-50%, -50%) rotate(${angle}deg)`,
-            };
-            const isFlipped = startPos.x > endPos.x;
-            return <SnakeIcon key={`rope-icon-${i}`} style={iconStyle} isFlipped={isFlipped} />;
-          }
+          // Always render the Procedural SVG Rope (SnakeIcon)
+          // Set rope icon thickness to be a proportion of a square's width
+          const ropeThickness = squareSize.width > 0 ? squareSize.width * 0.2 : 20;
+          const iconStyle = {
+            width: `${distance}px`,
+            height: `${ropeThickness}px`,
+            left: `${(startPos.x + endPos.x) / 2}px`,
+            top: `${(startPos.y + endPos.y) / 2}px`,
+            transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+          };
+          const isFlipped = startPos.x > endPos.x;
+          return <SnakeIcon key={`rope-icon-${i}`} style={iconStyle} isFlipped={isFlipped} />;
         })}
       </div>
 
