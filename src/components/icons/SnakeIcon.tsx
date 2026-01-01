@@ -3,44 +3,43 @@ import React from 'react';
 // NOTE: This component now renders a ROPE icon, not a snake.
 // The filename is kept for simplicity of file modification.
 export const SnakeIcon: React.FC<{ style: React.CSSProperties; isFlipped: boolean }> = ({ style, isFlipped }) => (
-  <div style={style} className="absolute" >
-    <svg 
-      viewBox="0 0 100 20" 
-      preserveAspectRatio="none" 
-      width="100%" 
-      height="100%" 
+  <div style={style} className="absolute">
+    <svg
+      viewBox="0 0 100 24" // Increased viewbox height for shadow
+      preserveAspectRatio="none"
+      width="100%"
+      height="100%"
       style={{ transform: isFlipped ? 'scaleX(-1)' : 'none', overflow: 'visible' }}
     >
       <defs>
-        <linearGradient id="ropeGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" style={{ stopColor: '#D2B48C' }} /> {/* Tan */}
-            <stop offset="50%" style={{ stopColor: '#A0522D' }} /> {/* Sienna */}
-            <stop offset="100%" style={{ stopColor: '#8B4513' }} /> {/* SaddleBrown */}
+        <linearGradient id="ropeGradient3D" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#d2b48c" />   {/* Lightest tan */}
+          <stop offset="50%" stopColor="#a0522d" />  {/* Mid sienna */}
+          <stop offset="100%" stopColor="#8b4513" /> {/* Darkest brown */}
         </linearGradient>
-         <filter id="ropeShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="1" dy="1" stdDeviation="1" floodColor="#000000" floodOpacity="0.4"/>
+        <filter id="ropeDropShadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="2" dy="4" stdDeviation="2.5" floodColor="#000000" floodOpacity="0.4" />
         </filter>
       </defs>
 
-      <g filter="url(#ropeShadow)">
-        {/* Main rope body */}
+      <g filter="url(#ropeDropShadow)">
+        {/* Main rope body with a wavy path */}
         <path
-          d="M 2,10 
-             C 20,20 40,0 60,10 
-             S 80,20 98,10"
-          stroke="url(#ropeGradient)"
-          strokeWidth="6"
+          d="M 2,12 C 20,22 40,2 60,12 S 80,22 98,12"
+          stroke="url(#ropeGradient3D)"
+          strokeWidth="8"
           fill="none"
           strokeLinecap="round"
         />
-        {/* Rope texture lines */}
+
+        {/* Rope texture lines following the curve */}
         <path
-          d="M 10,10 Q 15,14 20,10 M 25,10 Q 30,6 35,10 M 40,10 Q 45,14 50,10 M 55,10 Q 60,6 65,10 M 70,10 Q 75,14 80,10 M 85,10 Q 90,6 95,10"
+          d="M 10,12 Q 15,16 20,12 M 25,12 Q 30,8 35,12 M 40,12 Q 45,16 50,12 M 55,12 Q 60,8 65,12 M 70,12 Q 75,16 80,12 M 85,12 Q 90,8 95,12"
           stroke="#654321" // Darker brown for texture
-          strokeWidth="1.2"
+          strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
-          strokeOpacity="0.5"
+          strokeOpacity="0.6"
         />
       </g>
     </svg>

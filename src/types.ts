@@ -1,15 +1,9 @@
-
 export enum GameStage {
   Home = 'home',
   Setup = 'setup',
   Playing = 'playing',
   Finished = 'finished',
-  Design = 'design',
-}
-
-export enum GameType {
-  SnakesLadders = 'snakes_ladders',
-  ChallengeTrail = 'challenge_trail',
+  Design = 'design', // Halaman baru untuk admin/desainer
 }
 
 export interface Player {
@@ -22,7 +16,7 @@ export interface Player {
 export interface SnakeOrLadder {
   start: number;
   end: number;
-  imageUrl?: string;
+  imageUrl?: string; // To store the generated snake image
 }
 
 export type BoardActivities = Record<number, string>;
