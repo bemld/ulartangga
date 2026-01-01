@@ -55,11 +55,6 @@ export const GameControls: React.FC<GameControlsProps> = ({
                 <p className="font-bold text-slate-100">{player.name}</p>
                 <p className="text-sm text-slate-400">Level: {player.position}</p>
               </div>
-              {player.id === currentPlayer.id && (
-                  <div className="text-yellow-400 font-caveat text-lg animate-pulse">
-                    {isQuestionTime ? 'Jawab!' : '→ Sini!'}
-                  </div>
-              )}
             </div>
           ))}
         </div>

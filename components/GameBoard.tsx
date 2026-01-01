@@ -88,16 +88,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameType, players, snakes,
             className={`rounded-md flex items-start justify-end p-2 ${bgColor} border ${visualSettings.containerBackground ? 'border-white/10' : 'border-stone-300'} relative overflow-hidden`}
           >
             <span className={`font-bold ${gameType === GameType.ChallengeTrail ? 'text-2xl sm:text-4xl' : 'text-sm sm:text-lg'} ${visualSettings.containerBackground ? 'text-white/60' : 'text-slate-400'}`}>{num}</span>
-            {gameType === GameType.ChallengeTrail && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-                    <span className="text-4xl font-bold">Lvl {num}</span>
-                </div>
-            )}
           </div>
         ))}
       </div>
       
-      {/* Visual Ladders & Snakes - Only for standard mode */}
       {gameType === GameType.SnakesLadders && hasPositions && (
           <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
             {ladders.map((ladder, i) => {

@@ -46,6 +46,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
     }
     setIsGeneratingActivities(true);
     try {
+        // Correct initialization with API key from environment
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         
         let prompt;
@@ -73,6 +74,7 @@ Buat untuk kotak 2 hingga ${BOARD_SIZE - 1}.
 Format: JSON ARRAY objek { "square": number, "activity": string }.`;
         }
         
+        // Correct generateContent call with model name and response configuration
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: prompt,
@@ -92,6 +94,7 @@ Format: JSON ARRAY objek { "square": number, "activity": string }.`;
             },
         });
         
+        // Correct usage of .text property
         const generatedItems: { square: number; activity: string }[] = JSON.parse(response.text.trim());
         const newActivities: BoardActivities = {};
         generatedItems.forEach(item => { if (item.square && item.activity) newActivities[item.square] = item.activity; });

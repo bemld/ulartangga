@@ -1,7 +1,6 @@
+
 import React from 'react';
 
-// NOTE: This component now renders a ROPE icon, not a snake.
-// The filename is kept for simplicity of file modification.
 export const SnakeIcon: React.FC<{ style: React.CSSProperties; isFlipped: boolean }> = ({ style, isFlipped }) => (
   <div style={style} className="absolute" >
     <svg 
@@ -13,9 +12,9 @@ export const SnakeIcon: React.FC<{ style: React.CSSProperties; isFlipped: boolea
     >
       <defs>
         <linearGradient id="ropeGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" style={{ stopColor: '#D2B48C' }} /> {/* Tan */}
-            <stop offset="50%" style={{ stopColor: '#A0522D' }} /> {/* Sienna */}
-            <stop offset="100%" style={{ stopColor: '#8B4513' }} /> {/* SaddleBrown */}
+            <stop offset="0%" style={{ stopColor: '#D2B48C' }} />
+            <stop offset="50%" style={{ stopColor: '#A0522D' }} />
+            <stop offset="100%" style={{ stopColor: '#8B4513' }} />
         </linearGradient>
          <filter id="ropeShadow" x="-20%" y="-20%" width="140%" height="140%">
           <feDropShadow dx="1" dy="1" stdDeviation="1" floodColor="#000000" floodOpacity="0.4"/>
@@ -23,7 +22,6 @@ export const SnakeIcon: React.FC<{ style: React.CSSProperties; isFlipped: boolea
       </defs>
 
       <g filter="url(#ropeShadow)">
-        {/* Main rope body */}
         <path
           d="M 2,10 
              C 20,20 40,0 60,10 
@@ -33,10 +31,9 @@ export const SnakeIcon: React.FC<{ style: React.CSSProperties; isFlipped: boolea
           fill="none"
           strokeLinecap="round"
         />
-        {/* Rope texture lines */}
         <path
           d="M 10,10 Q 15,14 20,10 M 25,10 Q 30,6 35,10 M 40,10 Q 45,14 50,10 M 55,10 Q 60,6 65,10 M 70,10 Q 75,14 80,10 M 85,10 Q 90,6 95,10"
-          stroke="#654321" // Darker brown for texture
+          stroke="#654321"
           strokeWidth="1.2"
           fill="none"
           strokeLinecap="round"

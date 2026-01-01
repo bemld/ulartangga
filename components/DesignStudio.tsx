@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { VisualSettings } from '../types';
 
@@ -7,7 +8,6 @@ interface DesignStudioProps {
   onBack: () => void;
 }
 
-// Definisikan tema statis dengan path ke aset di folder public
 const themes = [
   {
     name: 'Hutan Fantasi',
@@ -60,12 +60,10 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
             Kembali ke Menu
           </button>
         </div>
-
         <div className="text-center">
             <h2 className="text-2xl font-semibold text-slate-700">Pilih Tema Visual Permainan</h2>
-            <p className="text-slate-500 mt-1">Pilih tampilan papan dan latar belakang permainan Anda. Semua tema gratis dan siap pakai.</p>
+            <p className="text-slate-500 mt-1">Pilih tampilan papan dan latar belakang permainan Anda.</p>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {themes.map((theme) => (
                 <div 
@@ -86,7 +84,6 @@ export const DesignStudio: React.FC<DesignStudioProps> = ({ initialSettings, onS
                 </div>
             ))}
         </div>
-
         <div className="pt-6 border-t mt-4">
           <button onClick={() => onSave(settings)} className="w-full bg-emerald-600 text-white font-bold text-xl py-3 rounded-lg hover:bg-emerald-700 transition-transform transform hover:scale-105 shadow-lg">
             Simpan Desain & Kembali
