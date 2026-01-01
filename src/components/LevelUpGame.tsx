@@ -302,17 +302,6 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     const hasCustomBg = !!visualSettings.containerBackground;
     const bgClass = hasCustomBg ? 'bg-black/40 border-white/20 text-white' : 'bg-white border-slate-200 text-slate-800';
 
-    // Konfigurasi Grid Layout Huruf S (9 Kotak)
-    // Baris 1 (Atas):  7 -> 8 -> 9
-    // Baris 2 (Tengah): 6 <- 5 <- 4
-    // Baris 3 (Bawah): 1 -> 2 -> 3
-    const gridOrder = [
-        7, 8, 9,
-        6, 5, 4,
-        1, 2, 3
-    ]; 
-    // Note: Rendered in standard CSS grid left-to-right, but logically assigned to levels.
-
     return (
         <div className="min-h-screen p-2 sm:p-4 flex flex-col items-center">
             {/* Header */}
@@ -329,34 +318,67 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                     {/* Container Board (Fixed Aspect Ratio) */}
                     <div className="relative w-full max-w-[500px] aspect-square">
                         
-                        {/* SVG Connector Lines (The S Shape) */}
+                        {/* SVG Connector Lines (The Road) */}
                         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
-                            {/* Path calculated based on 3x3 grid centers:
-                                Row 3 Y=83%, Row 2 Y=50%, Row 1 Y=17%
-                                Col 1 X=17%, Col 2 X=50%, Col 3 X=83%
-                             */}
+                             <defs>
+                                <filter id="roadShadow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feDropShadow dx="2" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.3"/>
+                                </filter>
+                            </defs>
+                            
+                            {/* Base Road (Thick Line) */}
                             <path 
-                                d="M 16.6 83.3 L 50 83.3 L 83.3 83.3 
-                                   Q 95 83.3 95 66.6 Q 95 50 83.3 50
-                                   L 50 50 L 16.6 50
-                                   Q 5 50 5 33.3 Q 5 16.6 16.6 16.6
-                                   L 50 16.6 L 83.3 16.6"
-                                stroke="rgba(100, 116, 139, 0.4)" 
-                                strokeWidth="15" 
+                                d="M 16.66 83.33 L 83.33 83.33 
+                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
+                                   L 16.66 50 
+                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
+                                   L 83.33 16.66"
+                                stroke="#94a3b8" // slate-400
+                                strokeWidth="26" 
+                                fill="none" 
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                filter="url(#roadShadow)"
+                            />
+                            
+                            {/* Inner Road (Lighter Line) */}
+                            <path 
+                                d="M 16.66 83.33 L 83.33 83.33 
+                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
+                                   L 16.66 50 
+                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
+                                   L 83.33 16.66"
+                                stroke="#cbd5e1" // slate-300
+                                strokeWidth="20" 
                                 fill="none" 
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
+
+                            {/* Road Markings (Dashed Line) */}
+                             <path 
+                                d="M 16.66 83.33 L 83.33 83.33 
+                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
+                                   L 16.66 50 
+                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
+                                   L 83.33 16.66"
+                                stroke="#f8fafc" // slate-50
+                                strokeWidth="3" 
+                                fill="none" 
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeDasharray="10 15"
+                            />
                         </svg>
 
                         {/* Grid Nodes */}
-                        <div className="w-full h-full grid grid-cols-3 grid-rows-3 gap-0">
+                        <div className="w-full h-full grid grid-cols-3 grid-rows-3 gap-0 relative z-10">
                             {/* 
                                 Kita mapping berdasarkan visual grid (atas kiri ke kanan, baris per baris)
                                 Row 1: 7, 8, 9
                                 Row 2: 4, 5, 6
                                 Row 3: 1, 2, 3
-                                Namun karena grid CSS render urut DOM, kita susun array `gridLayout` manual.
+                                Namun karena grid CSS render urut DOM, kita susun array manual.
                             */}
                             {/* Row 1 */}
                             {[7, 8, 9].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
@@ -481,7 +503,7 @@ const LevelNode: React.FC<{ level: number, players: Player[], levels: LevelConte
             
              {/* Difficulty Label (Optional, maybe too cluttered for mobile) */}
              {!isBoss && (
-                 <div className="absolute bottom-2 text-[10px] text-slate-500 font-bold bg-white/60 px-1 rounded backdrop-blur-sm">
+                 <div className="absolute bottom-2 text-[10px] text-slate-500 font-bold bg-white/60 px-1 rounded backdrop-blur-sm shadow-sm z-30">
                      {levels[level]?.difficulty}
                  </div>
              )}
