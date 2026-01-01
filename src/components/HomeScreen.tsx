@@ -20,7 +20,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
   const defaultClasses = "bg-stone-50/90 backdrop-blur-sm";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center relative">
       <div 
         className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${!visualSettings.containerBackground ? defaultClasses : ''}`}
         style={containerStyle}
@@ -65,8 +65,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
 
         </div>
       </div>
-       <footer className="absolute bottom-4 text-white/80 font-caveat text-xl tracking-wider drop-shadow-md">
-            Dibuat dengan AI untuk pembelajaran yang menyenangkan.
+       <footer className={`absolute bottom-4 font-caveat text-2xl tracking-wider drop-shadow-md ${visualSettings.containerBackground ? 'text-white/90' : 'text-slate-600'}`}>
+            Created By Besa Metiar Lasna Desy
         </footer>
     </div>
   );
