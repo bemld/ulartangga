@@ -305,86 +305,100 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     return (
         <div className="min-h-screen p-2 sm:p-4 flex flex-col items-center">
             {/* Header */}
-            <div className={`w-full max-w-6xl flex justify-between items-center mb-4 p-4 rounded-xl border-2 ${bgClass}`}>
+            <div className={`w-full max-w-7xl flex justify-between items-center mb-4 p-4 rounded-xl border-2 ${bgClass}`}>
                 <h1 className="text-2xl sm:text-3xl font-bold font-poppins">Level Up Adventure</h1>
                 <button onClick={onBackToMenu} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Keluar</button>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-6 w-full max-w-6xl flex-grow h-full">
+            <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl flex-grow h-full">
                 
                 {/* --- BOARD AREA --- */}
-                <div className="flex-grow relative bg-slate-200/50 rounded-2xl border-4 border-slate-400 p-4 sm:p-8 flex items-center justify-center min-h-[500px]">
+                <div className="flex-grow relative bg-slate-200/50 rounded-2xl border-4 border-slate-400 p-4 sm:p-8 flex items-center justify-center min-h-[600px]">
                     
-                    {/* Container Board (Fixed Aspect Ratio) */}
-                    <div className="relative w-full max-w-[500px] aspect-square">
+                    {/* Container Board (Responsive but Large) */}
+                    <div className="relative w-full max-w-3xl aspect-square">
                         
-                        {/* SVG Connector Lines (The Road) */}
-                        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+                        {/* SVG Connector Lines (The Road) - PRECISE COORDINATES 0-300 */}
+                        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 300 300" preserveAspectRatio="none">
                              <defs>
                                 <filter id="roadShadow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feDropShadow dx="2" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.3"/>
+                                    <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#000000" floodOpacity="0.5"/>
                                 </filter>
                             </defs>
                             
-                            {/* Base Road (Thick Line) */}
+                            {/* Base Road (Thick Asphalt) - 50 units wide */}
+                            {/* 
+                                Coords (Centers of 3x3 grid 100x100 cells):
+                                L1 (50, 250) -> L3 (250, 250)
+                                Curve UP to L4 (250, 150)
+                                L4 (250, 150) -> L6 (50, 150)
+                                Curve UP to L7 (50, 50)
+                                L7 (50, 50) -> L9 (250, 50)
+                            */}
                             <path 
-                                d="M 16.66 83.33 L 83.33 83.33 
-                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
-                                   L 16.66 50 
-                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
-                                   L 83.33 16.66"
-                                stroke="#94a3b8" // slate-400
-                                strokeWidth="26" 
+                                d="M 50 250 L 250 250 
+                                   C 300 250 300 150 250 150
+                                   L 50 150
+                                   C 0 150 0 50 50 50
+                                   L 250 50"
+                                stroke="#475569" // Slate-600 (Dark Asphalt)
+                                strokeWidth="50" 
                                 fill="none" 
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 filter="url(#roadShadow)"
                             />
-                            
-                            {/* Inner Road (Lighter Line) */}
-                            <path 
-                                d="M 16.66 83.33 L 83.33 83.33 
-                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
-                                   L 16.66 50 
-                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
-                                   L 83.33 16.66"
-                                stroke="#cbd5e1" // slate-300
-                                strokeWidth="20" 
+
+                             {/* Road Border (Lighter Edge) */}
+                             <path 
+                                d="M 50 250 L 250 250 
+                                   C 300 250 300 150 250 150
+                                   L 50 150
+                                   C 0 150 0 50 50 50
+                                   L 250 50"
+                                stroke="#64748b" // Slate-500
+                                strokeWidth="44" 
                                 fill="none" 
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
 
-                            {/* Road Markings (Dashed Line) */}
+                            {/* Road Markings (Yellow Dashed Line) */}
                              <path 
-                                d="M 16.66 83.33 L 83.33 83.33 
-                                   Q 98 83.33 98 66.66 Q 98 50 83.33 50
-                                   L 16.66 50 
-                                   Q 2 50 2 33.33 Q 2 16.66 16.66 16.66
-                                   L 83.33 16.66"
-                                stroke="#f8fafc" // slate-50
-                                strokeWidth="3" 
+                                d="M 50 250 L 250 250 
+                                   C 300 250 300 150 250 150
+                                   L 50 150
+                                   C 0 150 0 50 50 50
+                                   L 250 50"
+                                stroke="#facc15" // Yellow-400
+                                strokeWidth="4" 
                                 fill="none" 
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeDasharray="10 15"
+                                strokeDasharray="15 20"
                             />
                         </svg>
 
                         {/* Grid Nodes */}
                         <div className="w-full h-full grid grid-cols-3 grid-rows-3 gap-0 relative z-10">
                             {/* 
-                                Kita mapping berdasarkan visual grid (atas kiri ke kanan, baris per baris)
-                                Row 1: 7, 8, 9
-                                Row 2: 4, 5, 6
-                                Row 3: 1, 2, 3
-                                Namun karena grid CSS render urut DOM, kita susun array manual.
+                                ROW 1 (Top): 7, 8, 9 (Left to Right)
+                                Coords: (50,50), (150,50), (250,50) - Matches SVG Path End
                             */}
-                            {/* Row 1 */}
                             {[7, 8, 9].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
-                            {/* Row 2 - Urutan visual di layar 4, 5, 6 tapi logic S-shape kita handle di mapping SVG */}
-                            {[6, 5, 4].reverse().map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
-                            {/* Row 3 */}
+                            
+                            {/* 
+                                ROW 2 (Middle): 6, 5, 4 (Left to Right visually in Grid)
+                                Coords: (50,150), (150,150), (250,150)
+                                Path flows: 4 -> 5 -> 6 (Right to Left).
+                                Since Grid places them L->R, we must put 6 first, then 5, then 4.
+                            */}
+                            {[6, 5, 4].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
+                            
+                            {/* 
+                                ROW 3 (Bottom): 1, 2, 3 (Left to Right)
+                                Coords: (50,250), (150,250), (250,250) - Matches SVG Path Start
+                            */}
                             {[1, 2, 3].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
                         </div>
                     </div>
@@ -503,7 +517,7 @@ const LevelNode: React.FC<{ level: number, players: Player[], levels: LevelConte
             
              {/* Difficulty Label (Optional, maybe too cluttered for mobile) */}
              {!isBoss && (
-                 <div className="absolute bottom-2 text-[10px] text-slate-500 font-bold bg-white/60 px-1 rounded backdrop-blur-sm shadow-sm z-30">
+                 <div className="absolute bottom-2 text-[10px] text-slate-700 font-bold bg-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm shadow-sm z-30 border border-slate-300">
                      {levels[level]?.difficulty}
                  </div>
              )}
