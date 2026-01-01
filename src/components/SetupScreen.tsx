@@ -15,12 +15,18 @@ interface SetupScreenProps {
   onBack: () => void;
 }
 
-export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, onBack }) => {
+const ROPE_ASSETS = [
+  '/assets/rope1.png',
+  '/assets/rope2.png',
+  '/assets/rope3.png',
+];
+
+export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSettings, onBack }) => {
   const [playerNames, setPlayerNames] = useState<string[]>(['Kelompok 1', 'Kelompok 2']);
   const [activities, setActivities] = useState<BoardActivities>({});
   const [snakes, setSnakes] = useState<SnakeOrLadder[]>([
-    { start: 23, end: 5 }, 
-    { start: 16, end: 8 }
+    { start: 23, end: 5, imageUrl: ROPE_ASSETS[0] }, 
+    { start: 16, end: 8, imageUrl: ROPE_ASSETS[1] }
   ]);
   const [ladders, setLadders] = useState<SnakeOrLadder[]>([{ start: 4, end: 14 }, { start: 11, end: 21 }]);
   
@@ -77,7 +83,8 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, onBack })
 
   const handleAddSpecialSquare = (type: 'snakes' | 'ladders') => {
     if (type === 'snakes') {
-      setSnakes([...snakes, { start: 0, end: 0 }]);
+      const randomRope = ROPE_ASSETS[Math.floor(Math.random() * ROPE_ASSETS.length)];
+      setSnakes([...snakes, { start: 0, end: 0, imageUrl: randomRope }]);
     } else {
       setLadders([...ladders, { start: 0, end: 0 }]);
     }
@@ -185,36 +192,49 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
     onStartGame(finalPlayers, activities, snakes, ladders, activityType);
   };
 
+  const containerStyle: React.CSSProperties = visualSettings.containerBackground
+    ? {
+        backgroundImage: `url(${visualSettings.containerBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white', // Ganti warna teks agar kontras
+      }
+    : {};
+
+  const defaultClasses = "bg-stone-50";
+  const hasCustomBg = !!visualSettings.containerBackground;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
       <div 
-        className="w-full max-w-5xl bg-stone-50 rounded-2xl shadow-2xl shadow-black/30 p-6 sm:p-8 space-y-8 border-2 border-stone-200"
+        className={`w-full max-w-5xl rounded-2xl shadow-2xl shadow-black/30 p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'border-white/20' : 'border-stone-200'} ${!hasCustomBg ? defaultClasses : ''}`}
+        style={containerStyle}
       >
         <div className="text-center relative">
           <button
             onClick={onBack}
             aria-label="Kembali ke menu utama"
-            className="absolute top-0 left-0 flex items-center gap-1 text-sm font-semibold transition-colors text-sky-600 hover:text-sky-800"
+            className={`absolute top-0 left-0 flex items-center gap-1 text-sm font-semibold transition-colors ${hasCustomBg ? 'text-sky-300 hover:text-sky-100' : 'text-sky-600 hover:text-sky-800'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
             Kembali
           </button>
-          <h1 className="text-4xl sm:text-5xl font-bold font-poppins text-slate-800">Tangga Ilmu</h1>
-          <p className="mt-2 text-lg text-slate-500">Atur Permainan Edukatif Anda</p>
+          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-800'}`}>Tangga Ilmu</h1>
+          <p className={`mt-2 text-lg ${hasCustomBg ? 'text-slate-200' : 'text-slate-500'}`}>Atur Permainan Edukatif Anda</p>
         </div>
 
         {/* AI Activity Generation Section */}
-        <div className="p-6 rounded-xl border bg-stone-100 border-stone-300">
-            <h2 className="text-2xl font-semibold mb-4 font-poppins text-slate-700">1. Tentukan Konteks Pembelajaran</h2>
+        <div className={`p-6 rounded-xl border ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-stone-100 border-stone-300'}`}>
+            <h2 className={`text-2xl font-semibold mb-4 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>1. Tentukan Konteks Pembelajaran</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <input type="text" placeholder="Mata Pelajaran (e.g., Sejarah)" value={subject} onChange={e => setSubject(e.target.value)} className="p-3 border rounded-md focus:ring-2 focus:ring-orange-500 bg-white border-slate-300"/>
-                <input type="text" placeholder="Materi Spesifik (e.g., Proklamasi)" value={topic} onChange={e => setTopic(e.target.value)} className="p-3 border rounded-md focus:ring-2 focus:ring-orange-500 bg-white border-slate-300"/>
-                <input type="text" placeholder="Tingkat Kelas (e.g., Kelas 5 SD)" value={grade} onChange={e => setGrade(e.target.value)} className="p-3 border rounded-md focus:ring-2 focus:ring-orange-500 bg-white border-slate-300"/>
+                <input type="text" placeholder="Mata Pelajaran (e.g., Sejarah)" value={subject} onChange={e => setSubject(e.target.value)} className={`p-3 border rounded-md focus:ring-2 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}/>
+                <input type="text" placeholder="Materi Spesifik (e.g., Proklamasi)" value={topic} onChange={e => setTopic(e.target.value)} className={`p-3 border rounded-md focus:ring-2 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}/>
+                <input type="text" placeholder="Tingkat Kelas (e.g., Kelas 5 SD)" value={grade} onChange={e => setGrade(e.target.value)} className={`p-3 border rounded-md focus:ring-2 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}/>
             </div>
              <div className="flex justify-center gap-6 my-4">
-                <label className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-stone-200">
+                <label className={`flex items-center gap-2 cursor-pointer p-2 rounded-md ${hasCustomBg ? 'hover:bg-black/20' : 'hover:bg-stone-200'}`}>
                     <input 
                     type="radio" 
                     name="activityType" 
@@ -223,9 +243,9 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                     onChange={() => setActivityType('cognitive')}
                     className="w-5 h-5 text-orange-600 focus:ring-orange-500 border-slate-400"
                     />
-                    <span className="font-semibold text-slate-700">Kognitif (Tanya Jawab)</span>
+                    <span className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>Kognitif (Tanya Jawab)</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-stone-200">
+                <label className={`flex items-center gap-2 cursor-pointer p-2 rounded-md ${hasCustomBg ? 'hover:bg-black/20' : 'hover:bg-stone-200'}`}>
                     <input 
                     type="radio" 
                     name="activityType" 
@@ -234,7 +254,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                     onChange={() => setActivityType('psychomotor')}
                     className="w-5 h-5 text-orange-600 focus:ring-orange-500 border-slate-400"
                     />
-                    <span className="font-semibold text-slate-700">Psikomotor (Praktik)</span>
+                    <span className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>Psikomotor (Praktik)</span>
                 </label>
             </div>
             <button
@@ -242,10 +262,10 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                 disabled={isGeneratingActivities || !subject || !topic || !grade}
                 className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-orange-700 transition-all transform hover:scale-105 shadow disabled:bg-slate-400 disabled:cursor-not-allowed disabled:transform-none"
             >
-                {isGeneratingActivities ? 'Sedang Membuat...' : 'Buat Aktivitas/Soal dengan AI'}
+                {isGeneratingActivities ? 'Sedang Membuat Aktivitas...' : 'Buat Aktivitas dengan AI'}
             </button>
             {!import.meta.env.VITE_API_KEY && (
-              <p className="text-xs text-center mt-2 text-yellow-600">
+              <p className={`text-xs text-center mt-2 ${hasCustomBg ? 'text-yellow-300/80' : 'text-yellow-600'}`}>
                 Fitur AI membutuhkan API Key. Jika tombol nonaktif, pastikan API Key telah diatur.
               </p>
             )}
@@ -254,18 +274,18 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
           {/* Column 1: Activities Review */}
           <div>
-            <h2 className="text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins text-slate-700 border-stone-200">2. Tinjau Kotak Aktivitas/Soal</h2>
+            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
             <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
               {[...Array(BOARD_SIZE)].map((_, i) => {
                 const squareNum = i + 1;
                 return (
                   <div key={squareNum}>
-                    <label className="font-semibold text-slate-600">Kotak {squareNum}:</label>
+                    <label className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Kotak {squareNum}:</label>
                     <textarea
                       value={activities[squareNum] || ''}
                       onChange={(e) => handleActivityChange(squareNum, e.target.value)}
                       placeholder="Kosong (atau isi manual)"
-                      className="w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white border-slate-300"
+                      className={`w-full mt-1 p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}
                       rows={2}
                     />
                   </div>
@@ -276,10 +296,10 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
 
           {/* Column 2: Players & Special Squares */}
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold -mb-2 font-poppins text-slate-700">3. Atur Pemain & Papan</h2>
+            <h2 className={`text-2xl font-semibold -mb-2 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>3. Atur Pemain & Papan</h2>
             {/* Players Setup */}
             <div>
-              <h3 className="text-xl font-medium mb-2 text-slate-600">Pemain</h3>
+              <h3 className={`text-xl font-medium mb-2 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Pemain</h3>
               {playerNames.map((name, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
                   <span className={`w-6 h-6 rounded-full ${PLAYER_COLORS[index % PLAYER_COLORS.length]}`}></span>
@@ -287,13 +307,13 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                     type="text"
                     value={name}
                     onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                    className="flex-grow p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white border-slate-300"
+                    className={`flex-grow p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`}
                   />
                   <button onClick={() => handleRemovePlayer(index)} className="text-red-500 hover:text-red-700 p-1">✕</button>
                 </div>
               ))}
               {playerNames.length < PLAYER_COLORS.length && (
-                <button onClick={handleAddPlayer} className="mt-2 w-full font-semibold border-2 rounded-md py-2 transition-colors text-orange-600 border-orange-500 hover:bg-orange-50">
+                <button onClick={handleAddPlayer} className={`mt-2 w-full font-semibold border-2 rounded-md py-2 transition-colors ${hasCustomBg ? 'text-orange-300 border-orange-400 hover:bg-black/20' : 'text-orange-600 border-orange-500 hover:bg-orange-50'}`}>
                   + Tambah Pemain
                 </button>
               )}
@@ -307,6 +327,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   onChange={(i, f, v) => handleSpecialSquareChange(i, 'ladders', f, v)} 
                   onAdd={() => handleAddSpecialSquare('ladders')} 
                   onRemove={(i) => handleRemoveSpecialSquare(i, 'ladders')}
+                  hasCustomBg={hasCustomBg}
               />
               <SpecialSquareSetup 
                   title="Tali (Turun)" 
@@ -314,12 +335,13 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   onChange={(i, f, v) => handleSpecialSquareChange(i, 'snakes', f, v)} 
                   onAdd={() => handleAddSpecialSquare('snakes')} 
                   onRemove={(i) => handleRemoveSpecialSquare(i, 'snakes')}
+                  hasCustomBg={hasCustomBg}
               />
             </div>
           </div>
         </div>
         
-        <div className="pt-6 border-t border-slate-200">
+        <div className={`pt-6 border-t ${hasCustomBg ? 'border-white/20' : 'border-slate-200'}`}>
           <button onClick={handleStart} className="w-full bg-emerald-600 text-white font-bold text-xl py-4 rounded-lg hover:bg-emerald-700 transition-transform transform hover:scale-105 shadow-lg">
             Mulai Permainan
           </button>
@@ -335,25 +357,26 @@ interface SpecialSquareSetupProps {
     onChange: (index: number, field: 'start' | 'end', value: string) => void;
     onAdd: () => void;
     onRemove: (index: number) => void;
+    hasCustomBg: boolean;
 }
 
-const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, onChange, onAdd, onRemove }) => {
+const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, onChange, onAdd, onRemove, hasCustomBg }) => {
     const baseTitle = title.split(' ')[0];
 
     return (
         <div>
-            <h3 className="text-xl font-medium mb-2 text-slate-600">{title}</h3>
+            <h3 className={`text-xl font-medium mb-2 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>{title}</h3>
             {items.map((item, index) => (
-                <div key={index} className="p-2 border rounded-lg mb-2 bg-stone-100">
+                <div key={index} className={`p-2 border rounded-lg mb-2 ${hasCustomBg ? 'bg-black/20 border-white/10' : 'bg-stone-100'}`}>
                   <div className="flex items-center gap-2">
-                      <input type="number" value={item.start || ''} onChange={e => onChange(index, 'start', e.target.value)} className="w-16 p-2 border rounded-md bg-white" placeholder="Dari" />
+                      <input type="number" value={item.start || ''} onChange={e => onChange(index, 'start', e.target.value)} className={`w-16 p-2 border rounded-md ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white' : 'bg-white'}`} placeholder="Dari" />
                       <span>→</span>
-                      <input type="number" value={item.end || ''} onChange={e => onChange(index, 'end', e.target.value)} className="w-16 p-2 border rounded-md bg-white" placeholder="Ke" />
+                      <input type="number" value={item.end || ''} onChange={e => onChange(index, 'end', e.target.value)} className={`w-16 p-2 border rounded-md ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white' : 'bg-white'}`} placeholder="Ke" />
                       <button onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700 p-1 ml-auto">✕</button>
                   </div>
                 </div>
             ))}
-            <button onClick={onAdd} className="mt-1 w-full text-sm font-semibold border-2 border-dashed rounded-md py-1 transition-colors text-slate-600 border-slate-400 hover:bg-stone-200">
+            <button onClick={onAdd} className={`mt-1 w-full text-sm font-semibold border-2 border-dashed rounded-md py-1 transition-colors ${hasCustomBg ? 'text-slate-400 border-slate-500 hover:bg-black/20' : 'text-slate-600 border-slate-400 hover:bg-stone-200'}`}>
               + Tambah {baseTitle}
             </button>
         </div>

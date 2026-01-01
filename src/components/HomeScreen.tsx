@@ -7,19 +7,28 @@ interface HomeScreenProps {
   visualSettings: VisualSettings;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDesign }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDesign, visualSettings }) => {
   
+  const containerStyle: React.CSSProperties = visualSettings.containerBackground
+    ? { 
+        backgroundImage: `url(${visualSettings.containerBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : {};
+
   const defaultClasses = "bg-stone-50/90 backdrop-blur-sm";
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
       <div 
-        className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${defaultClasses}`}
+        className={`rounded-2xl shadow-2xl shadow-black/30 p-8 sm:p-12 max-w-4xl w-full border-2 border-stone-200/50 ${!visualSettings.containerBackground ? defaultClasses : ''}`}
+        style={containerStyle}
       >
-        <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm">
+        <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
           Tangga Ilmu
         </h1>
-        <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 font-poppins drop-shadow-sm">
+        <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
           Ubah pelajaran di kelas menjadi petualangan seru! Buat papan permainan Ular Tangga edukatif yang disesuaikan dengan mata pelajaran, materi, dan tingkat kelas Anda.
         </p>
         
@@ -27,7 +36,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
             
             {/* --- Step 1 --- */}
             <div className="flex flex-col items-center">
-                <span className="font-caveat text-xl mb-1 text-slate-500">Langkah 1</span>
+                <span className={`font-caveat text-xl mb-1 ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>Langkah 1</span>
                 <button
                     onClick={onStartDesign}
                     className="bg-emerald-600 text-white font-bold text-xl sm:text-2xl py-4 px-10 rounded-full hover:bg-emerald-700 transition-all transform hover:scale-110 shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-300"
@@ -38,14 +47,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSetup, onStartDes
 
             {/* --- Arrow --- */}
             <div className="sm:mt-8">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 sm:h-12 sm:w-12 transform sm:rotate-0 rotate-90 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-10 w-10 sm:h-12 sm:w-12 transform sm:rotate-0 rotate-90 ${visualSettings.containerBackground ? 'text-white/70' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
             </div>
 
             {/* --- Step 2 --- */}
             <div className="flex flex-col items-center">
-                <span className="font-caveat text-xl mb-1 text-slate-500">Langkah 2</span>
+                <span className={`font-caveat text-xl mb-1 ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>Langkah 2</span>
                 <button
                     onClick={onStartSetup}
                     className="bg-sky-600 text-white font-bold text-xl sm:text-2xl py-4 px-10 rounded-full hover:bg-sky-700 transition-all transform hover:scale-110 shadow-xl focus:outline-none focus:ring-4 focus:ring-sky-300"

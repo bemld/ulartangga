@@ -34,7 +34,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
   const isCognitiveQuestionTime = activityType === 'cognitive' && pendingQuestion;
 
   return (
-    <div className="w-full bg-slate-800 text-slate-200 p-4 sm:p-6 shadow-2xl shadow-black/40 flex flex-col justify-between h-full border-t-4 sm:border-t-0 sm:border-l-4 border-slate-900/50 overflow-y-auto">
+    <div className="w-full bg-slate-800 text-slate-200 p-4 sm:p-6 rounded-2xl shadow-2xl shadow-black/40 flex flex-col justify-between h-full border-4 border-slate-900/50">
       <div>
         <h2 className="text-4xl font-bold text-yellow-300 mb-4 font-caveat text-center">Status Pemain</h2>
         <div className="space-y-2">
