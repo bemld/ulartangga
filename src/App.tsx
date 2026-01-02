@@ -3,7 +3,11 @@ import { VisualSettings } from './types';
 import { HomeScreen } from './components/HomeScreen';
 import { DesignStudio } from './components/DesignStudio';
 import { SnakeLadderGame } from './components/SnakeLadderGame';
-import { LevelUpGame } from './components/LevelUpGame'; // Komponen Game Baru
+import { LevelUpGame } from './components/LevelUpGame';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LoginScreen } from './components/LoginScreen';
+import { ClassManager } from './components/ClassManager';
+import { TopBar } from './components/TopBar';
 
 const VISUAL_SETTINGS_KEY = 'tanggaIlmuVisualSettings';
 
@@ -12,12 +16,13 @@ const initialVisualSettings: VisualSettings = {
   containerBackground: null,
 };
 
-// Define the top-level views available in the app
 type AppView = 'home' | 'design' | 'game-snake-ladder' | 'game-level-up';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [visualSettings, setVisualSettings] = useState<VisualSettings>(initialVisualSettings);
+  const [showClassManager, setShowClassManager] = useState(false);
 
   // Load and apply visual settings from localStorage
   useEffect(() => {
@@ -39,8 +44,8 @@ export const App: React.FC = () => {
       document.body.style.backgroundAttachment = 'fixed';
     } else {
       document.body.style.backgroundImage = '';
-      document.body.style.backgroundColor = ''; // Revert to CSS default
-      document.body.classList.add('bg-stone-200'); // Ensure fallback
+      document.body.style.backgroundColor = '';
+      document.body.classList.add('bg-stone-200');
     }
   }, [visualSettings.mainBackground]);
   
@@ -54,63 +59,59 @@ export const App: React.FC = () => {
     setCurrentView('home');
   }, []);
 
-  const navigateToHome = useCallback(() => {
-    setCurrentView('home');
-  }, []);
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-500">Memuat data...</div>;
+  if (!user) return <LoginScreen />;
 
-  const navigateToDesign = useCallback(() => {
-    setCurrentView('design');
-  }, []);
+  return (
+    <>
+        <TopBar 
+            onOpenClassManager={() => setShowClassManager(true)} 
+            onOpenDesign={() => setCurrentView('design')}
+        />
+        
+        {/* Spacer for TopBar */}
+        <div className="pt-16">
+            {currentView === 'home' && (
+                <HomeScreen 
+                    onStartSnakeLadder={() => setCurrentView('game-snake-ladder')}
+                    onStartLevelUp={() => setCurrentView('game-level-up')}
+                    onStartDesign={() => setCurrentView('design')} 
+                    visualSettings={visualSettings} 
+                />
+            )}
+            
+            {currentView === 'design' && (
+                <DesignStudio 
+                    initialSettings={visualSettings} 
+                    onSave={handleSaveSettings} 
+                    onBack={() => setCurrentView('home')} 
+                />
+            )}
 
-  const startSnakeLadderGame = useCallback(() => {
-    setCurrentView('game-snake-ladder');
-  }, []);
+            {currentView === 'game-snake-ladder' && (
+                <SnakeLadderGame 
+                    visualSettings={visualSettings}
+                    onBackToMenu={() => setCurrentView('home')}
+                />
+            )}
 
-  const startLevelUpGame = useCallback(() => {
-    setCurrentView('game-level-up');
-  }, []);
+            {currentView === 'game-level-up' && (
+                <LevelUpGame 
+                    visualSettings={visualSettings}
+                    onBackToMenu={() => setCurrentView('home')}
+                />
+            )}
+        </div>
 
+        {showClassManager && <ClassManager onClose={() => setShowClassManager(false)} />}
+    </>
+  );
+};
 
-  // --- Render Views ---
-
-  if (currentView === 'home') {
+export const App: React.FC = () => {
     return (
-      <HomeScreen 
-        onStartSnakeLadder={startSnakeLadderGame}
-        onStartLevelUp={startLevelUpGame}
-        onStartDesign={navigateToDesign} 
-        visualSettings={visualSettings} 
-      />
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
-  }
-  
-  if (currentView === 'design') {
-    return (
-      <DesignStudio 
-        initialSettings={visualSettings} 
-        onSave={handleSaveSettings} 
-        onBack={navigateToHome} 
-      />
-    );
-  }
-
-  if (currentView === 'game-snake-ladder') {
-    return (
-      <SnakeLadderGame 
-        visualSettings={visualSettings}
-        onBackToMenu={navigateToHome}
-      />
-    );
-  }
-
-  if (currentView === 'game-level-up') {
-    return (
-      <LevelUpGame 
-        visualSettings={visualSettings}
-        onBackToMenu={navigateToHome}
-      />
-    );
-  }
-
-  return null;
 };

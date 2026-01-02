@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
-import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask } from '../types';
+import React, { useState, useEffect } from 'react';
+import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, ClassData } from '../types';
 import { PLAYER_COLORS } from '../constants';
 import { GoogleGenAI, Type } from "@google/genai";
 import { VictoryScreen } from './VictoryScreen';
+import { useAuth } from '../contexts/AuthContext';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase';
+import { generateSmartGroups } from '../utils/grouping';
+import { Shuffle } from 'lucide-react';
 
 // --- TYPES INTERNAL ---
 type SetupStep = 'input' | 'review';
@@ -15,17 +20,48 @@ interface LevelUpSetupProps {
 }
 
 const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings, onBack }) => {
+    const { user } = useAuth();
+    
     // State Input
     const [step, setStep] = useState<SetupStep>('input');
     const [subject, setSubject] = useState('');
     const [grade, setGrade] = useState('');
     const [objective, setObjective] = useState('');
     const [activityType, setActivityType] = useState<ActivityType>('cognitive');
-    const [playerNames, setPlayerNames] = useState<string[]>(['Tim A', 'Tim B']);
     
+    // Player State
+    const [inputMode, setInputMode] = useState<'manual' | 'class'>('manual');
+    const [playerNames, setPlayerNames] = useState<string[]>(['Tim A', 'Tim B']);
+    const [classes, setClasses] = useState<ClassData[]>([]);
+    const [selectedClassId, setSelectedClassId] = useState('');
+    const [groupCount, setGroupCount] = useState(4);
+
     // State Processing
     const [isGenerating, setIsGenerating] = useState(false);
     const [draftLevels, setDraftLevels] = useState<LevelContent>({});
+
+    // Load Classes
+    useEffect(() => {
+        if (!user) return;
+        const q = query(collection(db, 'users', user.uid, 'classes'), orderBy('name'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setClasses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassData)));
+        });
+        return unsubscribe;
+    }, [user]);
+
+    const handleAutoGroup = () => {
+        const cls = classes.find(c => c.id === selectedClassId);
+        if (!cls || cls.students.length === 0) {
+            alert("Pilih kelas yang memiliki siswa.");
+            return;
+        }
+        
+        const groups = generateSmartGroups(cls.students, groupCount);
+        const names = groups.map(g => g.name); 
+        setPlayerNames(names);
+        alert(`Berhasil membagi ${cls.students.length} siswa menjadi ${groups.length} kelompok.`);
+    };
 
     const handleAddPlayer = () => {
         if (playerNames.length < PLAYER_COLORS.length) setPlayerNames([...playerNames, `Tim ${String.fromCharCode(65 + playerNames.length)}`]);
@@ -164,21 +200,65 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
     
                         <div className="space-y-4">
                             <h3 className={`text-xl font-bold border-b pb-2 ${textColor}`}>2. Kelompok Peserta</h3>
-                            <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-                                {playerNames.map((name, idx) => (
-                                    <div key={idx} className="flex gap-2">
-                                        <div className={`w-10 h-10 rounded-full flex-shrink-0 ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}`}></div>
-                                        <input value={name} onChange={(e) => {
-                                            const newNames = [...playerNames];
-                                            newNames[idx] = e.target.value;
-                                            setPlayerNames(newNames);
-                                        }} className={inputClass} />
-                                        <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-500 font-bold px-2">✕</button>
-                                    </div>
-                                ))}
+                            
+                             <div className="flex gap-2 mb-2 bg-slate-100 p-1 rounded-lg w-fit">
+                                <button 
+                                    onClick={() => setInputMode('manual')}
+                                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'manual' ? 'bg-white shadow text-orange-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    Manual
+                                </button>
+                                <button 
+                                    onClick={() => setInputMode('class')}
+                                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'class' ? 'bg-white shadow text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    Dari Kelas
+                                </button>
                             </div>
-                            {playerNames.length < 8 && (
-                                <button onClick={handleAddPlayer} className={`w-full py-2 border-2 border-dashed rounded font-bold ${hasCustomBg ? 'border-slate-400 text-slate-300 hover:bg-white/10' : 'border-slate-400 text-slate-500 hover:bg-slate-100'}`}>+ Tambah Kelompok</button>
+
+                            {inputMode === 'class' ? (
+                                <div className={`p-4 rounded-lg border-2 border-emerald-400/50 ${hasCustomBg ? 'bg-emerald-900/20' : 'bg-emerald-50'}`}>
+                                    <select 
+                                        value={selectedClassId} 
+                                        onChange={e => setSelectedClassId(e.target.value)}
+                                        className={`w-full p-2 rounded mb-3 text-sm ${hasCustomBg ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 border'}`}
+                                    >
+                                        <option value="">-- Pilih Kelas --</option>
+                                        {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.students.length} Siswa)</option>)}
+                                    </select>
+
+                                    <input 
+                                        type="number" 
+                                        min={2} 
+                                        max={8} 
+                                        placeholder="Jumlah Kelompok"
+                                        value={groupCount}
+                                        onChange={e => setGroupCount(parseInt(e.target.value))}
+                                        className={`w-full p-2 rounded mb-3 text-sm ${hasCustomBg ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 border'}`}
+                                    />
+                                    
+                                    <button onClick={handleAutoGroup} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded flex items-center justify-center gap-2 text-sm">
+                                        <Shuffle size={16} />
+                                        Buat Kelompok
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                                    {playerNames.map((name, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}`}></div>
+                                            <input value={name} onChange={(e) => {
+                                                const newNames = [...playerNames];
+                                                newNames[idx] = e.target.value;
+                                                setPlayerNames(newNames);
+                                            }} className={inputClass} />
+                                            <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-500 font-bold px-2">✕</button>
+                                        </div>
+                                    ))}
+                                     {playerNames.length < 8 && (
+                                        <button onClick={handleAddPlayer} className={`w-full py-2 border-2 border-dashed rounded font-bold ${hasCustomBg ? 'border-slate-400 text-slate-300 hover:bg-white/10' : 'border-slate-400 text-slate-500 hover:bg-slate-100'}`}>+ Tambah Kelompok</button>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -327,14 +407,6 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                             </defs>
                             
                             {/* Base Road (Thick Asphalt) - 50 units wide */}
-                            {/* 
-                                Coords (Centers of 3x3 grid 100x100 cells):
-                                L1 (50, 250) -> L3 (250, 250)
-                                Curve UP to L4 (250, 150)
-                                L4 (250, 150) -> L6 (50, 150)
-                                Curve UP to L7 (50, 50)
-                                L7 (50, 50) -> L9 (250, 50)
-                            */}
                             <path 
                                 d="M 50 250 L 250 250 
                                    C 300 250 300 150 250 150
@@ -381,24 +453,8 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
 
                         {/* Grid Nodes */}
                         <div className="w-full h-full grid grid-cols-3 grid-rows-3 gap-0 relative z-10">
-                            {/* 
-                                ROW 1 (Top): 7, 8, 9 (Left to Right)
-                                Coords: (50,50), (150,50), (250,50) - Matches SVG Path End
-                            */}
                             {[7, 8, 9].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
-                            
-                            {/* 
-                                ROW 2 (Middle): 6, 5, 4 (Left to Right visually in Grid)
-                                Coords: (50,150), (150,150), (250,150)
-                                Path flows: 4 -> 5 -> 6 (Right to Left).
-                                Since Grid places them L->R, we must put 6 first, then 5, then 4.
-                            */}
                             {[6, 5, 4].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
-                            
-                            {/* 
-                                ROW 3 (Bottom): 1, 2, 3 (Left to Right)
-                                Coords: (50,250), (150,250), (250,250) - Matches SVG Path Start
-                            */}
                             {[1, 2, 3].map(lvl => <LevelNode key={lvl} level={lvl} players={players} levels={levels} />)}
                         </div>
                     </div>
