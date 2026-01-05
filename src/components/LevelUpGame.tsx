@@ -542,7 +542,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                     </button>
                                 ))}
                             </div>
-                            <p className="text-xs text-slate-400 mt-1">Pilih bintang (0-5) untuk sikap/karakter siswa.</p>
+                            <p className="text-xs text-slate-400 mt-1">Pilih bintang (1-5) untuk mengaktifkan tombol lulus.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -555,11 +555,16 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                             </button>
                             <button 
                                 onClick={() => handleValidation(true)}
-                                className="bg-emerald-500 text-white font-bold py-4 rounded-xl hover:bg-emerald-600 transition-colors shadow-lg border-2 border-emerald-400 transform hover:scale-105"
+                                disabled={characterStars === 0}
+                                className={`font-bold py-4 rounded-xl transition-colors shadow-lg border-2 transform 
+                                    ${characterStars === 0 
+                                        ? 'bg-slate-300 text-slate-500 border-slate-400 cursor-not-allowed' 
+                                        : 'bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-400 hover:scale-105'
+                                    }`}
                             >
                                 {modalTask.level === 9 ? '🏆 JUARA!' : '✅ LULUS!'}
                                 <span className="block text-xs font-normal opacity-90 mt-1">
-                                    Dapat {5 + characterStars} Bintang & Naik Level
+                                    {characterStars === 0 ? 'Beri Bintang Karakter Dulu' : `Dapat ${5 + characterStars} Bintang & Naik Level`}
                                 </span>
                             </button>
                         </div>
