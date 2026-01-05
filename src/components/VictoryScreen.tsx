@@ -2,6 +2,7 @@ import React from 'react';
 import { Player } from '../types';
 import { TrophyIcon } from './icons/TrophyIcon';
 import { Confetti } from './Confetti';
+import { Star } from 'lucide-react';
 
 interface VictoryScreenProps {
   winner: Player;
@@ -34,6 +35,12 @@ export const VictoryScreen: React.FC<VictoryScreenProps> = ({ winner, onNewGame,
           <p className={`text-3xl sm:text-4xl mt-3 font-semibold text-yellow-300 drop-shadow-md`}>
             {winner.name} telah menang!
           </p>
+          
+          {/* Total Stars Display */}
+          <div className="mt-4 flex items-center justify-center gap-2 bg-white/10 p-3 rounded-full backdrop-blur-sm border border-white/20">
+              <Star size={32} className="text-yellow-400 fill-yellow-400 drop-shadow-sm" />
+              <span className="text-3xl font-bold text-white">{winner.stars || 0} Total Bintang</span>
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-12 animate-content-fade-late opacity-0">

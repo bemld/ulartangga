@@ -68,8 +68,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
       const groups = generateSmartGroups(cls.students, groupCount);
       // We only use the names for the game state, but we can store members in a separate way if needed
       // For now, SnakeLadder uses 'name' string.
-      // We can format name as "Kelompok 1 (Budi, Siti...)" but it might be too long.
-      // Let's just use "Kelompok X" and maybe show details in tooltip?
+      // We can format name as "Kelompok X" and maybe show details in tooltip?
       // Re-map to simple strings for this specific component state
       const names = groups.map(g => g.name); 
       setPlayerNames(names);
@@ -225,6 +224,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
       name,
       position: 1,
       color: PLAYER_COLORS[index % PLAYER_COLORS.length],
+      stars: 0
     }));
     onStartGame(finalPlayers, activities, snakes, ladders, activityType);
   };

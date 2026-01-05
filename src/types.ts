@@ -12,6 +12,7 @@ export interface Player {
   name: string;
   position: number; // Dalam Level Up, ini berarti Level saat ini (1-9)
   color: string;
+  stars: number; // Jumlah bintang yang dikumpulkan
   members?: string[]; // Optional: List of student names in this group
 }
 

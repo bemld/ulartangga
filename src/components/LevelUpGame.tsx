@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Shuffle } from 'lucide-react';
+import { Shuffle, Star } from 'lucide-react';
 
 // --- TYPES INTERNAL ---
 type SetupStep = 'input' | 'review';
@@ -158,6 +158,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
             name,
             position: 1, 
             color: PLAYER_COLORS[index % PLAYER_COLORS.length],
+            stars: 0
         }));
         onStartGame(finalPlayers, draftLevels, activityType);
     };
@@ -333,6 +334,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     const [activeGroupIndex, setActiveGroupIndex] = useState<number | null>(null);
     const [modalTask, setModalTask] = useState<LevelTask | null>(null);
     const [winner, setWinner] = useState<Player | null>(null);
+    const [characterStars, setCharacterStars] = useState<number>(0);
 
     const handleStart = (newPlayers: Player[], newLevels: LevelContent) => {
         setPlayers(newPlayers);
@@ -347,6 +349,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
         
         setActiveGroupIndex(index);
         setModalTask(levels[player.position]);
+        setCharacterStars(0); // Reset star rating
     };
 
     const handleValidation = (passed: boolean) => {
@@ -357,6 +360,10 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                 const newPlayers = [...prev];
                 const player = newPlayers[activeGroupIndex];
                 
+                // Tambahkan Bintang (5 dari Tugas + Karakter)
+                const starsEarned = 5 + characterStars;
+                player.stars = (player.stars || 0) + starsEarned;
+
                 // Jika player ada di level 9 dan lulus, dia menang.
                 if (player.position === 9) {
                     setWinner(player);
@@ -369,6 +376,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
         }
         setModalTask(null);
         setActiveGroupIndex(null);
+        setCharacterStars(0);
     };
 
     if (stage === GameStage.Setup) {
@@ -467,7 +475,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                     
                     <div className="space-y-3">
                         {players.map((p, idx) => {
-                            const isFinished = winner?.id === p.id; // Logic sederhana, jika ada winner, anggap game selesai
+                            const isFinished = winner?.id === p.id;
                             return (
                                 <button 
                                     key={p.id}
@@ -478,9 +486,15 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                     <div className={`w-8 h-8 rounded-full ${p.color} mr-3 border border-white`}></div>
                                     <div className="text-left flex-grow">
                                         <div className="font-bold text-white">{p.name}</div>
-                                        <div className="text-xs text-slate-300">Level: {isFinished ? '🏆 SELESAI' : p.position}</div>
+                                        <div className="flex justify-between items-center mt-1">
+                                             <div className="text-xs text-slate-300">Level: {isFinished ? '🏆 SELESAI' : p.position}</div>
+                                             <div className="flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded-full">
+                                                 <Star size={10} className="text-yellow-400 fill-yellow-400" />
+                                                 <span className="text-xs font-bold text-yellow-100">{p.stars}</span>
+                                             </div>
+                                        </div>
                                     </div>
-                                    <div className="bg-white/20 px-3 py-1 rounded text-white font-bold text-sm">
+                                    <div className="ml-2 bg-white/20 px-3 py-1 rounded text-white font-bold text-sm">
                                         {isFinished ? 'Win' : 'Uji'}
                                     </div>
                                 </button>
@@ -507,8 +521,28 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                             </span>
                         </div>
 
-                        <div className="bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 mb-8 min-h-[150px] flex items-center justify-center text-center overflow-y-auto max-h-[40vh]">
+                        <div className="bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 mb-6 min-h-[150px] flex items-center justify-center text-center overflow-y-auto max-h-[30vh]">
                             <p className="text-xl sm:text-2xl font-medium text-slate-800 whitespace-pre-wrap">{modalTask.content}</p>
+                        </div>
+                        
+                        {/* Character Rating Section */}
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-center">
+                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">Penilaian Karakter (Oleh Guru)</h3>
+                            <div className="flex justify-center gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setCharacterStars(star)}
+                                        className="transition-transform hover:scale-125 focus:outline-none"
+                                    >
+                                        <Star 
+                                            size={32} 
+                                            className={`${star <= characterStars ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'} transition-colors`} 
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-xs text-slate-400 mt-1">Pilih bintang (0-5) untuk sikap/karakter siswa.</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -524,7 +558,9 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                 className="bg-emerald-500 text-white font-bold py-4 rounded-xl hover:bg-emerald-600 transition-colors shadow-lg border-2 border-emerald-400 transform hover:scale-105"
                             >
                                 {modalTask.level === 9 ? '🏆 JUARA!' : '✅ LULUS!'}
-                                <span className="block text-xs font-normal opacity-90 mt-1">{modalTask.level === 9 ? 'Menangkan Game' : `Naik ke Level ${modalTask.level + 1}`}</span>
+                                <span className="block text-xs font-normal opacity-90 mt-1">
+                                    Dapat {5 + characterStars} Bintang & Naik Level
+                                </span>
                             </button>
                         </div>
                     </div>

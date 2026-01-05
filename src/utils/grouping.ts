@@ -35,6 +35,7 @@ export const generateSmartGroups = (students: Student[], groupCount: number): Pl
     name: `Kelompok ${index + 1}`,
     position: 1,
     color: PLAYER_COLORS[index % PLAYER_COLORS.length],
+    stars: 0,
     members: groupStudents.map(s => s.name)
   }));
 };

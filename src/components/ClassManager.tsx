@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { collection, doc, addDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { ClassData, Student } from '../types';
 import * as XLSX from 'xlsx';
-import { Users, Upload, Plus, Trash2, Save, X } from 'lucide-react';
+import { Users, Upload, Plus, Trash2, X, Download } from 'lucide-react';
 
 interface ClassManagerProps {
   onClose: () => void;
@@ -75,6 +75,29 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
     setSelectedClass({ ...selectedClass, students: updatedStudents });
   };
 
+  const handleDownloadTemplate = () => {
+    // Data contoh untuk template
+    const templateData = [
+      { "Nama": "Budi Santoso", "Jenis Kelamin": "L" },
+      { "Nama": "Siti Aminah", "Jenis Kelamin": "P" },
+      { "Nama": "Andi Pratama", "Jenis Kelamin": "L" },
+      { "Nama": "Dewi Sartika", "Jenis Kelamin": "P" },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template Siswa");
+    
+    // Auto width columns (optional tweak)
+    const wscols = [
+        {wch: 30}, // Width for Name
+        {wch: 15}, // Width for Gender
+    ];
+    ws['!cols'] = wscols;
+
+    XLSX.writeFile(wb, "template_siswa_smartplay.xlsx");
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !selectedClass || !user) return;
     
@@ -121,8 +144,10 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
           setSelectedClass({ ...selectedClass, students: updatedStudents });
           alert(`Berhasil mengimpor ${newStudents.length} siswa!`);
       } else {
-          alert("Tidak ditemukan data yang valid. Pastikan ada kolom 'Nama' dan 'Jenis Kelamin' (L/P).");
+          alert("Tidak ditemukan data yang valid. Pastikan file Excel memiliki kolom 'Nama' dan 'Jenis Kelamin' (L/P).");
       }
+      // Reset input file agar bisa upload file yang sama lagi jika perlu
+      e.target.value = '';
     };
     reader.readAsBinaryString(file);
   };
@@ -217,13 +242,21 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
                         </div>
                         
                         {/* Import Excel */}
-                        <div className="flex items-center justify-end gap-2">
-                            <label className="flex items-center gap-2 bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors text-sm font-medium shadow-sm">
-                                <Upload size={16} />
-                                Import Excel
-                                <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="hidden" />
-                            </label>
-                            <a href="https://docs.google.com/spreadsheets/d/1_template_example" target="_blank" rel="noreferrer" className="text-xs text-sky-500 hover:underline hidden">Template?</a>
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 bg-white border border-slate-300 text-slate-600 px-4 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors text-sm font-medium shadow-sm">
+                                    <Upload size={16} />
+                                    Import Excel
+                                    <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} className="hidden" />
+                                </label>
+                            </div>
+                            <button 
+                                onClick={handleDownloadTemplate} 
+                                className="text-xs text-sky-500 hover:text-sky-700 hover:underline flex items-center gap-1"
+                            >
+                                <Download size={12} />
+                                Download Template
+                            </button>
                         </div>
                     </div>
 
