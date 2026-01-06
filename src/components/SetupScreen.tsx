@@ -256,7 +256,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
           >
             ← Kembali
           </button>
-          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-800'}`}>Tangga Ilmu</h1>
+          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-800'}`}>Smart Play</h1>
           <p className={`mt-2 text-lg ${hasCustomBg ? 'text-slate-200' : 'text-slate-500'}`}>Atur Permainan Edukatif Anda</p>
         </div>
 
@@ -353,7 +353,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                         className={`w-full p-2 rounded mb-3 ${hasCustomBg ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 border'}`}
                       />
                       
-                      <button onClick={handleAutoGroup} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded flex items-center justify-center gap-2">
+                      <button onClick={handleAutoGroup} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded flex items-center justify-center gap-2 text-sm">
                           <Shuffle size={18} />
                           Buat Kelompok Otomatis
                       </button>

@@ -27,7 +27,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
         style={containerStyle}
       >
         <h1 className="text-5xl sm:text-7xl font-bold text-slate-800 mb-4 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
-          Tangga Ilmu
+          Smart Play
         </h1>
         <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto mb-10 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
           Pilih petualangan belajar Anda!
