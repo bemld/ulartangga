@@ -35,20 +35,19 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
   // --- FIRESTORE SUBSCRIPTION ---
   useEffect(() => {
     if (!user) return;
-    // Real-time listener ke Firebase Firestore
     const q = query(collection(db, 'users', user.uid, 'classes'), orderBy('name'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const classList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassData));
       setClasses(classList);
       
-      // Update selected class data in real-time if it exists
+      // Update selected class data in real-time
       if (selectedClass) {
         const updatedSelected = classList.find(c => c.id === selectedClass.id);
         if (updatedSelected) setSelectedClass(updatedSelected);
       }
     });
     return unsubscribe;
-  }, [user, selectedClass?.id]); // Depend on selectedClass.id only to avoid loops
+  }, [user, selectedClass?.id]);
 
   // --- CLASS ACTIONS ---
 
@@ -100,14 +99,15 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
   const handleAddStudent = async () => {
     if (!selectedClass || !user || !newStudentName.trim()) return;
     
+    // Gunakan random string sederhana untuk ID agar kompatibel dengan semua browser
+    const simpleId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
     const newStudent: Student = {
-      id: crypto.randomUUID(),
+      id: simpleId,
       name: newStudentName,
       gender: newStudentGender
     };
     
-    // Firestore tidak punya arrayUnion untuk object kompleks yang unik ID-nya tapi sama kontennya
-    // Jadi kita ambil array lama, push, lalu save ulang.
     const updatedStudents = [...selectedClass.students, newStudent];
     
     try {
@@ -203,8 +203,10 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
                 gender = 'L';
             }
 
+            const simpleId = Date.now().toString(36) + Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+
             newStudents.push({
-                id: crypto.randomUUID(),
+                id: simpleId,
                 name: String(name),
                 gender: gender as 'L' | 'P'
             });
