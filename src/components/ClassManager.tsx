@@ -99,7 +99,6 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
   const handleAddStudent = async () => {
     if (!selectedClass || !user || !newStudentName.trim()) return;
     
-    // Gunakan random string sederhana untuk ID agar kompatibel dengan semua browser
     const simpleId = Date.now().toString(36) + Math.random().toString(36).substr(2);
 
     const newStudent: Student = {
@@ -301,6 +300,7 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
                     <p className="text-xs mt-1">Buat kelas baru untuk memulai.</p>
                 </div>
             )}
+          </div>
         </div>
 
         {/* Main Content: Student List */}
