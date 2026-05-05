@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { Player, SnakeOrLadder, BoardActivities, ActivityType, VisualSettings, ClassData } from '../types';
 import { BOARD_SIZE, PLAYER_COLORS } from '../constants';
-import { GoogleGenAI, Type } from "@google/genai";
+import { generateAIContent } from '../services/aiService';
+import { Type } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -138,8 +139,6 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
     }
     setIsGeneratingActivities(true);
     try {
-        const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-        
         let prompt;
 
         if (activityType === 'psychomotor') {
@@ -170,33 +169,29 @@ Kembalikan hasilnya dalam format JSON berupa sebuah ARRAY. Setiap elemen dalam a
 Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "square": 3, "activity": "Sebutkan 3 pahlawan nasional." }, ... ]`;
         }
         
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            square: {
-                                type: Type.NUMBER,
-                                description: 'Nomor kotak untuk aktivitas ini.'
-                            },
-                            activity: {
-                                type: Type.STRING,
-                                description: 'Teks pertanyaan atau tugas untuk kotak ini.'
-                            }
+        const jsonText = await generateAIContent({
+            prompt,
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        square: {
+                            type: Type.NUMBER,
+                            description: 'Nomor kotak untuk aktivitas ini.'
                         },
-                        required: ['square', 'activity']
-                    }
-                },
+                        activity: {
+                            type: Type.STRING,
+                            description: 'Teks pertanyaan atau tugas untuk kotak ini.'
+                        }
+                    },
+                    required: ['square', 'activity']
+                }
             },
         });
         
-        const jsonText = response.text.trim();
-        const generatedItems: { square: number; activity: string }[] = JSON.parse(jsonText);
+        const generatedItems: { square: number; activity: string }[] = JSON.parse(jsonText.trim());
         
         const newActivities: BoardActivities = {};
         for (const item of generatedItems) {

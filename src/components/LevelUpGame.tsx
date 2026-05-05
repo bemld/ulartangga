@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, ClassData } from '../types';
 import { PLAYER_COLORS } from '../constants';
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { generateAIContent } from '../services/aiService';
 import { VictoryScreen } from './VictoryScreen';
 import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -76,8 +77,6 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
 
         setIsGenerating(true);
         try {
-            const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-            
             const promptContext = activityType === 'cognitive' 
                 ? "Pertanyaan Kuis/Soal (Kognitif)" 
                 : "Tantangan Fisik/Praktik (Psikomotor)";
@@ -103,27 +102,24 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                 { "level": 9, "difficulty": "Puncak", "content": "..." }
             ]`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: prompt,
-                config: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: Type.ARRAY,
-                        items: {
-                            type: Type.OBJECT,
-                            properties: {
-                                level: { type: Type.NUMBER },
-                                difficulty: { type: Type.STRING },
-                                content: { type: Type.STRING }
-                            },
-                            required: ['level', 'content', 'difficulty']
-                        }
-                    },
+            const jsonText = await generateAIContent({
+                prompt,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            level: { type: Type.NUMBER },
+                            difficulty: { type: Type.STRING },
+                            content: { type: Type.STRING }
+                        },
+                        required: ['level', 'content', 'difficulty']
+                    }
                 },
             });
 
-            const generatedData = JSON.parse(response.text.trim()) as LevelTask[];
+            const generatedData = JSON.parse(jsonText.trim()) as LevelTask[];
             const contentMap: LevelContent = {};
             
             // Fill 1-9

@@ -11,6 +11,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Validasi sederhana untuk memastikan key tidak kosong sebelum inisialisasi
+if (!firebaseConfig.apiKey) {
+  console.error("FIREBASE ERROR: VITE_FIREBASE_API_KEY tidak ditemukan. Pastikan variabel lingkungan sudah diatur di Vercel.");
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
