@@ -29,6 +29,8 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
   const [winner, setWinner] = useState<Player | null>(null);
   const [canRoll, setCanRoll] = useState(true);
 
+  const [customAwards, setCustomAwards] = useState<string[]>([]);
+
   // New states for cognitive mode
   const [activityType, setActivityType] = useState<ActivityType>('psychomotor');
   const [pendingQuestions, setPendingQuestions] = useState<Record<number, string | null>>({});
@@ -50,12 +52,14 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
     newSnakes: SnakeOrLadder[],
     newLadders: SnakeOrLadder[],
     newActivityType: ActivityType,
+    awards: string[]
   ) => {
     setPlayers(newPlayers);
     setActivities(newActivities);
     setSnakes(newSnakes);
     setLadders(newLadders);
     setActivityType(newActivityType);
+    setCustomAwards(awards);
     setCurrentPlayerIndex(0);
     setDiceResult(1);
     setIsRolling(false);
@@ -208,6 +212,8 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
     return (
       <VictoryScreen 
         winner={winner}
+        players={players}
+        customAwards={customAwards}
         onNewGame={handleNewGame} // This goes back to menu
         onResetGame={handleResetGame} // This goes back to setup
       />

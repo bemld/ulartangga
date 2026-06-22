@@ -65,6 +65,7 @@ export interface SavedActivity {
   activityType: ActivityType;
   boardActivities?: BoardActivities;
   levelContent?: LevelContent;
+  customAwards?: string[];
   createdAt?: any;
 }
 

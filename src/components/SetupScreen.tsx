@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Users, Shuffle, FolderOpen, Save, Trash2 } from 'lucide-react';
+import { Users, Shuffle, FolderOpen, Save, Trash2, Award, Plus, Trophy } from 'lucide-react';
 
 interface SetupScreenProps {
   onStartGame: (
@@ -15,7 +15,8 @@ interface SetupScreenProps {
     activities: BoardActivities,
     snakes: SnakeOrLadder[],
     ladders: SnakeOrLadder[],
-    activityType: ActivityType
+    activityType: ActivityType,
+    customAwards: string[]
   ) => void;
   visualSettings: VisualSettings;
   onBack: () => void;
@@ -33,6 +34,15 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
   const [selectedClassId, setSelectedClassId] = useState('');
   const [groupCount, setGroupCount] = useState(4);
   
+  // Custom Award Categories State
+  const [customAwards, setCustomAwards] = useState<string[]>([
+    "Kelompok Paling Sportif", 
+    "Kelompok Paling Kompak", 
+    "Kelompok Paling Kreatif", 
+    "Kelompok Paling Aktif"
+  ]);
+  const [newAwardInput, setNewAwardInput] = useState('');
+
   // Game Config State
   const [activities, setActivities] = useState<BoardActivities>({});
   const [snakes, setSnakes] = useState<SnakeOrLadder[]>([
@@ -103,6 +113,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
         type: 'snake-ladder',
         activityType,
         boardActivities: activities,
+        customAwards,
         createdAt: serverTimestamp()
       });
       setPresetTitle('');
@@ -126,6 +137,9 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
     setActivityType(found.activityType || 'cognitive');
     if (found.boardActivities) {
       setActivities(found.boardActivities);
+    }
+    if (found.customAwards && found.customAwards.length > 0) {
+      setCustomAwards(found.customAwards);
     }
     alert(`Berhasil memuat preset "${found.title}" secara offline!`);
   };
@@ -306,7 +320,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
       color: PLAYER_COLORS[index % PLAYER_COLORS.length],
       stars: 0
     }));
-    onStartGame(finalPlayers, activities, snakes, ladders, activityType);
+    onStartGame(finalPlayers, activities, snakes, ladders, activityType, customAwards);
   };
 
   const containerStyle: React.CSSProperties = visualSettings.containerBackground
@@ -530,6 +544,94 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   onRemove={(i) => handleRemoveSpecialSquare(i, 'snakes')}
                   hasCustomBg={hasCustomBg}
               />
+            </div>
+
+            {/* Kategori Apresiasi Guru */}
+            <div className={`p-4 rounded-xl border mt-6 ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
+              <h3 className={`text-base font-bold mb-1 font-poppins flex items-center gap-2 ${hasCustomBg ? 'text-white' : 'text-slate-850'}`}>
+                <Award className="text-orange-500" size={18} />
+                4. Kategori Apresiasi & Karakter Kelompok
+              </h3>
+              <p className={`text-xs mb-3 ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>
+                Guru dapat merancang kategori apresiasi yang akan dianugerahkan ke kelompok di akhir permainan.
+              </p>
+              
+              <div className="space-y-2 max-h-48 overflow-y-auto mb-3 pr-1">
+                {customAwards.map((award, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Award size={13} className="text-amber-500 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={award}
+                      onChange={(e) => {
+                        const updated = [...customAwards];
+                        updated[idx] = e.target.value;
+                        setCustomAwards(updated);
+                      }}
+                      className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                    />
+                    <button
+                      onClick={() => setCustomAwards(customAwards.filter((_, i) => i !== idx))}
+                      className="text-red-500 hover:text-red-700 p-1 text-sm font-semibold"
+                      title="Hapus Kategori"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Kategori baru... (e.g. Kelompok Ter-jujur)"
+                  value={newAwardInput}
+                  onChange={(e) => setNewAwardInput(e.target.value)}
+                  className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 border-orange-200'}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (newAwardInput.trim()) {
+                        setCustomAwards([...customAwards, newAwardInput.trim()]);
+                        setNewAwardInput('');
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newAwardInput.trim()) {
+                      setCustomAwards([...customAwards, newAwardInput.trim()]);
+                      setNewAwardInput('');
+                    }
+                  }}
+                  className="bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-orange-700 flex items-center justify-center gap-1 flex-shrink-0"
+                >
+                  <Plus size={13} /> Tambah
+                </button>
+              </div>
+
+              {/* Suggestions */}
+              <div className="mt-3">
+                <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${hasCustomBg ? 'text-slate-400' : 'text-slate-500'}`}>Rekomendasi Cepat:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Kelompok Paling Sportif", "Kelompok Paling Kompak", "Kelompok Paling Kreatif", "Kelompok Paling Aktif", "Kelompok Ter-Tertib", "Kelompok Ter-Jujur"].map(sug => {
+                    const isAlreadyIncluded = customAwards.includes(sug);
+                    if (isAlreadyIncluded) return null;
+                    return (
+                      <button
+                        type="button"
+                        key={sug}
+                        onClick={() => setCustomAwards([...customAwards, sug])}
+                        className={`text-[10px] px-2 py-1 rounded-full border transition-all ${hasCustomBg ? 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:scale-105'}`}
+                      >
+                        + {sug}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

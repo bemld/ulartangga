@@ -8,14 +8,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Shuffle, Star, FolderOpen, Save, Trash2 } from 'lucide-react';
+import { Shuffle, Star, FolderOpen, Save, Trash2, Award, Plus } from 'lucide-react';
 
 // --- TYPES INTERNAL ---
 type SetupStep = 'input' | 'review';
 
 // --- SETUP COMPONENT ---
 interface LevelUpSetupProps {
-    onStartGame: (players: Player[], content: LevelContent, type: ActivityType) => void;
+    onStartGame: (players: Player[], content: LevelContent, type: ActivityType, customAwards: string[]) => void;
     visualSettings: VisualSettings;
     onBack: () => void;
 }
@@ -36,6 +36,15 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
     const [classes, setClasses] = useState<ClassData[]>([]);
     const [selectedClassId, setSelectedClassId] = useState('');
     const [groupCount, setGroupCount] = useState(4);
+
+    // Custom Award Categories State
+    const [customAwards, setCustomAwards] = useState<string[]>([
+        "Kelompok Paling Sportif", 
+        "Kelompok Paling Kompak", 
+        "Kelompok Paling Kreatif", 
+        "Kelompok Paling Aktif"
+    ]);
+    const [newAwardInput, setNewAwardInput] = useState('');
 
     // State Processing
     const [isGenerating, setIsGenerating] = useState(false);
@@ -92,6 +101,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                 type: 'level-up',
                 activityType,
                 levelContent: draftLevels,
+                customAwards,
                 createdAt: serverTimestamp()
             });
             setPresetTitle('');
@@ -115,6 +125,9 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
         if (found.levelContent) {
             setDraftLevels(found.levelContent);
             setStep('review'); // instantly go to review mode to show loaded content
+        }
+        if (found.customAwards && found.customAwards.length > 0) {
+            setCustomAwards(found.customAwards);
         }
         alert(`Berhasil memuat preset "${found.title}" secara offline!`);
     };
@@ -235,7 +248,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
             color: PLAYER_COLORS[index % PLAYER_COLORS.length],
             stars: 0
         }));
-        onStartGame(finalPlayers, draftLevels, activityType);
+        onStartGame(finalPlayers, draftLevels, activityType, customAwards);
     };
 
     const hasCustomBg = !!visualSettings.containerBackground;
@@ -363,6 +376,67 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                                     )}
                                 </div>
                             )}
+
+                            {/* Custom Awards list & editor */}
+                            <div className={`p-4 rounded-xl border mt-4 ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
+                                <h4 className={`text-sm font-bold flex items-center gap-1.5 ${textColor}`}>
+                                    <Award className="text-orange-500" size={16} /> Regu Apresiasi & Karakter
+                                </h4>
+                                <p className={`text-[11px] mb-2 ${subTextColor}`}>Guru dapat mengcustom kategori penghargaan di akhir game.</p>
+                                
+                                <div className="space-y-1.5 max-h-32 overflow-y-auto mb-2.5 pr-1 font-sans">
+                                    {customAwards.map((award, idx) => (
+                                        <div key={idx} className="flex items-center gap-1.5">
+                                            <Award size={12} className="text-amber-500 flex-shrink-0" />
+                                            <input
+                                                type="text"
+                                                value={award}
+                                                onChange={(e) => {
+                                                    const updated = [...customAwards];
+                                                    updated[idx] = e.target.value;
+                                                    setCustomAwards(updated);
+                                                }}
+                                                className={`flex-grow p-1 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                                            />
+                                            <button
+                                                onClick={() => setCustomAwards(customAwards.filter((_, i) => i !== idx))}
+                                                className="text-red-500 hover:text-red-700 p-0.5 text-xs font-bold"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex gap-1.5 font-sans">
+                                    <input
+                                        type="text"
+                                        placeholder="Kategori baru..."
+                                        value={newAwardInput}
+                                        onChange={(e) => setNewAwardInput(e.target.value)}
+                                        className={`flex-grow p-1 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                if (newAwardInput.trim()) {
+                                                    setCustomAwards([...customAwards, newAwardInput.trim()]);
+                                                    setNewAwardInput('');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            if (newAwardInput.trim()) {
+                                                setCustomAwards([...customAwards, newAwardInput.trim()]);
+                                                setNewAwardInput('');
+                                            }
+                                        }}
+                                        className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-orange-700 flex items-center gap-1 flex-shrink-0"
+                                    >
+                                        <Plus size={11} /> Tambah
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
     
@@ -460,10 +534,12 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     const [modalTask, setModalTask] = useState<LevelTask | null>(null);
     const [winner, setWinner] = useState<Player | null>(null);
     const [characterStars, setCharacterStars] = useState<number>(0);
+    const [customAwards, setCustomAwards] = useState<string[]>([]);
 
-    const handleStart = (newPlayers: Player[], newLevels: LevelContent) => {
+    const handleStart = (newPlayers: Player[], newLevels: LevelContent, type: ActivityType, awards: string[]) => {
         setPlayers(newPlayers);
         setLevels(newLevels);
+        setCustomAwards(awards);
         setStage(GameStage.Playing);
     };
 
@@ -509,7 +585,7 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     }
 
     if (stage === GameStage.Finished && winner) {
-        return <VictoryScreen winner={winner} onNewGame={onBackToMenu} onResetGame={() => setStage(GameStage.Setup)} />;
+        return <VictoryScreen winner={winner} players={players} customAwards={customAwards} onNewGame={onBackToMenu} onResetGame={() => setStage(GameStage.Setup)} />;
     }
 
     const hasCustomBg = !!visualSettings.containerBackground;
