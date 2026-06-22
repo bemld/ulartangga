@@ -28,6 +28,7 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
   // Players State
   const [inputMode, setInputMode] = useState<'manual' | 'class'>('manual');
   const [playerNames, setPlayerNames] = useState<string[]>(['Kelompok 1', 'Kelompok 2']);
+  const [pawnStyles, setPawnStyles] = useState<Record<number, 'car' | 'kid' | 'classic'>>({});
   
   // Class Mode State
   const [classes, setClasses] = useState<ClassData[]>([]);
@@ -318,7 +319,8 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
       name,
       position: 1,
       color: PLAYER_COLORS[index % PLAYER_COLORS.length],
-      stars: 0
+      stars: 0,
+      pawnStyle: pawnStyles[index] || (index % 3 === 0 ? 'car' : index % 3 === 1 ? 'kid' : 'classic')
     }));
     onStartGame(finalPlayers, activities, snakes, ladders, activityType, customAwards);
   };
@@ -504,22 +506,51 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                   </div>
               ) : (
                 <>
-                  <h3 className={`text-xl font-medium mb-2 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Pemain Manual</h3>
-                  {playerNames.map((name, index) => (
-                    <div key={index} className="flex items-center gap-2 mb-2">
-                      <span className={`w-6 h-6 rounded-full ${PLAYER_COLORS[index % PLAYER_COLORS.length]}`}></span>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                        className={inputClass}
-                      />
-                      <button onClick={() => handleRemovePlayer(index)} className="text-red-500 hover:text-red-700 p-1">✕</button>
-                    </div>
-                  ))}
+                  <h3 className={`text-xl font-medium mb-3 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Kelompok & Karakter 3D</h3>
+                  {playerNames.map((name, index) => {
+                    const currentStyle = pawnStyles[index] || (index % 3 === 0 ? 'car' : index % 3 === 1 ? 'kid' : 'classic');
+                    return (
+                      <div key={index} className={`p-3 rounded-xl border mb-3 transition-colors ${hasCustomBg ? 'bg-black/30 border-white/10 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`w-4 h-4 rounded-full flex-shrink-0 ${PLAYER_COLORS[index % PLAYER_COLORS.length]}`}></span>
+                          <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => handlePlayerNameChange(index, e.target.value)}
+                            className={`flex-grow p-1.5 py-1 text-sm rounded font-medium focus:ring-1 focus:ring-orange-500 border ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-stone-50 border-stone-200 text-slate-800'}`}
+                            placeholder="Nama Kelompok"
+                          />
+                          <button onClick={() => handleRemovePlayer(index)} className="text-red-400 hover:text-red-600 p-1 font-bold text-xs" title="Hapus">✕</button>
+                        </div>
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-400/20">
+                          <span className={`text-[11px] font-bold ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Model Pion 3D:</span>
+                          <div className="flex gap-1.5">
+                            {[
+                              { label: '👦 Anak', value: 'kid' },
+                              { label: '🚗 Mobil', value: 'car' },
+                              { label: '♟️ Klasik', value: 'classic' }
+                            ].map(item => (
+                              <button
+                                key={item.value}
+                                type="button"
+                                onClick={() => setPawnStyles({ ...pawnStyles, [index]: item.value as any })}
+                                className={`text-[10px] px-2 py-1 rounded-md transition-all font-bold ${
+                                  currentStyle === item.value 
+                                    ? 'bg-orange-600 text-white scale-105 shadow' 
+                                    : (hasCustomBg ? 'bg-white/10 text-slate-300 hover:bg-white/20' : 'bg-stone-100 text-slate-600 hover:bg-stone-200')
+                                }`}
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {playerNames.length < PLAYER_COLORS.length && (
                     <button onClick={handleAddPlayer} className={`mt-2 w-full font-semibold border-2 rounded-md py-2 transition-colors ${hasCustomBg ? 'text-orange-300 border-orange-400 hover:bg-black/20' : 'text-orange-600 border-orange-500 hover:bg-orange-50'}`}>
-                      + Tambah Pemain
+                      + Tambah Kelompok Baru
                     </button>
                   )}
                 </>

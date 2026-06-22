@@ -9,6 +9,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverT
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
 import { Shuffle, Star, FolderOpen, Save, Trash2, Award, Plus } from 'lucide-react';
+import { PlayerPawn } from './PlayerPawn';
 
 // --- TYPES INTERNAL ---
 type SetupStep = 'input' | 'review';
@@ -33,6 +34,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
     // Player State
     const [inputMode, setInputMode] = useState<'manual' | 'class'>('manual');
     const [playerNames, setPlayerNames] = useState<string[]>(['Tim A', 'Tim B']);
+    const [pawnStyles, setPawnStyles] = useState<Record<number, 'car' | 'kid' | 'classic'>>({});
     const [classes, setClasses] = useState<ClassData[]>([]);
     const [selectedClassId, setSelectedClassId] = useState('');
     const [groupCount, setGroupCount] = useState(4);
@@ -246,7 +248,8 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
             name,
             position: 1, 
             color: PLAYER_COLORS[index % PLAYER_COLORS.length],
-            stars: 0
+            stars: 0,
+            pawnStyle: pawnStyles[index] || (index % 3 === 0 ? 'car' : index % 3 === 1 ? 'kid' : 'classic')
         }));
         onStartGame(finalPlayers, draftLevels, activityType, customAwards);
     };
@@ -359,18 +362,52 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                                     </button>
                                 </div>
                             ) : (
-                                <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-                                    {playerNames.map((name, idx) => (
-                                        <div key={idx} className="flex gap-2">
-                                            <div className={`w-10 h-10 rounded-full flex-shrink-0 ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}`}></div>
-                                            <input value={name} onChange={(e) => {
-                                                const newNames = [...playerNames];
-                                                newNames[idx] = e.target.value;
-                                                setPlayerNames(newNames);
-                                            }} className={inputClass} />
-                                            <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-500 font-bold px-2">✕</button>
-                                        </div>
-                                    ))}
+                                <div className="max-h-72 overflow-y-auto space-y-2 pr-2">
+                                    {playerNames.map((name, idx) => {
+                                        const currentStyle = pawnStyles[idx] || (idx % 3 === 0 ? 'car' : idx % 3 === 1 ? 'kid' : 'classic');
+                                        return (
+                                            <div key={idx} className={`p-3 rounded-xl border transition-colors ${hasCustomBg ? 'bg-black/30 border-white/10 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <span className={`w-4 h-4 rounded-full flex-shrink-0 ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}`}></span>
+                                                    <input
+                                                        type="text"
+                                                        value={name}
+                                                        onChange={(e) => {
+                                                            const newNames = [...playerNames];
+                                                            newNames[idx] = e.target.value;
+                                                            setPlayerNames(newNames);
+                                                        }}
+                                                        className={`flex-grow p-1.5 py-1 text-sm rounded font-medium focus:ring-1 focus:ring-orange-500 border ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-stone-50 border-stone-200 text-slate-800'}`}
+                                                        placeholder="Nama Kelompok"
+                                                    />
+                                                    <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-650 p-1 font-bold text-xs" title="Hapus">✕</button>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-1 border-t border-slate-400/20">
+                                                    <span className={`text-[11px] font-bold ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Model Pion 3D:</span>
+                                                    <div className="flex gap-1.5">
+                                                        {[
+                                                            { label: '👦 Anak', value: 'kid' },
+                                                            { label: '🚗 Mobil', value: 'car' },
+                                                            { label: '♟️ Klasik', value: 'classic' }
+                                                        ].map(item => (
+                                                            <button
+                                                                key={item.value}
+                                                                type="button"
+                                                                onClick={() => setPawnStyles({ ...pawnStyles, [idx]: item.value as any })}
+                                                                className={`text-[10px] px-2 py-1 rounded-md transition-all font-bold ${
+                                                                    currentStyle === item.value 
+                                                                        ? 'bg-orange-600 text-white scale-105 shadow' 
+                                                                        : (hasCustomBg ? 'bg-white/10 text-slate-300 hover:bg-white/20' : 'bg-stone-100 text-slate-600 hover:bg-stone-200')
+                                                                }`}
+                                                            >
+                                                                {item.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                      {playerNames.length < 8 && (
                                         <button onClick={handleAddPlayer} className={`w-full py-2 border-2 border-dashed rounded font-bold ${hasCustomBg ? 'border-slate-400 text-slate-300 hover:bg-white/10' : 'border-slate-400 text-slate-500 hover:bg-slate-100'}`}>+ Tambah Kelompok</button>
                                     )}
@@ -800,15 +837,19 @@ const LevelNode: React.FC<{ level: number, players: Player[], levels: LevelConte
                 {playersHere.map((p, i) => (
                     <div 
                         key={p.id} 
-                        className={`absolute transform transition-all duration-500 hover:z-30 hover:scale-125`}
+                        className={`absolute transition-all duration-500`}
                         style={{ 
                             // Spread players slightly so they don't overlap perfectly
-                            transform: `translate(${i * 12 - (playersHere.length-1)*6}px, ${i * -8}px)` 
+                            transform: `translate(${i * 14 - (playersHere.length-1)*7}px, -15px) scale(0.7)`,
+                            width: '48px',
+                            height: '60px'
                         }}
                     >
-                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md ${p.color} flex items-center justify-center text-[10px] text-white font-bold`} title={p.name}>
-                            {p.name.charAt(0)}
-                        </div>
+                        <PlayerPawn 
+                            player={p}
+                            position={{ x: 24, y: 30 }}
+                            isActive={false}
+                        />
                     </div>
                 ))}
             </div>

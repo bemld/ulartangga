@@ -14,6 +14,7 @@ export interface Player {
   color: string;
   stars: number; // Jumlah bintang yang dikumpulkan
   members?: string[]; // Optional: List of student names in this group
+  pawnStyle?: 'car' | 'kid' | 'classic';
 }
 
 export interface SnakeOrLadder {
