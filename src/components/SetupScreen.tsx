@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import type { Player, SnakeOrLadder, BoardActivities, ActivityType, VisualSettings, ClassData } from '../types';
+import type { Player, SnakeOrLadder, BoardActivities, ActivityType, VisualSettings, ClassData, SavedActivity } from '../types';
 import { BOARD_SIZE, PLAYER_COLORS } from '../constants';
 import { generateAIContent } from '../services/aiService';
 import { Type } from "@google/genai";
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Users, Shuffle } from 'lucide-react';
+import { Users, Shuffle, FolderOpen, Save, Trash2 } from 'lucide-react';
 
 interface SetupScreenProps {
   onStartGame: (
@@ -48,15 +48,100 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
   const [activityType, setActivityType] = useState<ActivityType>('cognitive');
   const [isGeneratingActivities, setIsGeneratingActivities] = useState(false);
 
+  // Saved Presets State
+  const [savedActivities, setSavedActivities] = useState<SavedActivity[]>([]);
+  const [presetTitle, setPresetTitle] = useState('');
+  const [isSavingPreset, setIsSavingPreset] = useState(false);
+
   // Load Classes
   useEffect(() => {
     if (!user) return;
     const q = query(collection(db, 'users', user.uid, 'classes'), orderBy('name'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setClasses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassData)));
+    }, (error) => {
+      console.error("Firestore loading classes error:", error);
     });
     return unsubscribe;
   }, [user]);
+
+  // Load Saved Presets (Offline Capable)
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, 'users', user.uid, 'savedActivities'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SavedActivity));
+      setSavedActivities(list.filter(item => item.type === 'snake-ladder'));
+    }, (error) => {
+      console.error("Firestore loading presets error:", error);
+    });
+    return unsubscribe;
+  }, [user]);
+
+  // Save Activities Preset Action (Durable & Offline)
+  const handleSavePreset = async () => {
+    if (!user) {
+      alert("Harap masuk/login terlebih dahulu untuk menyimpan aktivitas.");
+      return;
+    }
+    if (!presetTitle.trim()) {
+      alert("Masukkan Judul/Nama aktivitas terlebih dahulu.");
+      return;
+    }
+    if (Object.keys(activities).length === 0) {
+      alert("Aktivitas masih kosong. Buat aktivitas dengan AI atau isi manual sebelum menyimpan.");
+      return;
+    }
+
+    setIsSavingPreset(true);
+    try {
+      await addDoc(collection(db, 'users', user.uid, 'savedActivities'), {
+        title: presetTitle.trim(),
+        subject,
+        topic,
+        grade,
+        type: 'snake-ladder',
+        activityType,
+        boardActivities: activities,
+        createdAt: serverTimestamp()
+      });
+      setPresetTitle('');
+      alert("Aktivitas berhasil disimpan ke local cache & cloud!");
+    } catch (error) {
+      console.error("Gagal menyimpan preset:", error);
+      alert("Gagal menyimpan preset.");
+    } finally {
+      setIsSavingPreset(false);
+    }
+  };
+
+  // Load Preset Action
+  const handleLoadPreset = (presetId: string) => {
+    const found = savedActivities.find(p => p.id === presetId);
+    if (!found) return;
+
+    setSubject(found.subject || '');
+    setTopic(found.topic || '');
+    setGrade(found.grade || '');
+    setActivityType(found.activityType || 'cognitive');
+    if (found.boardActivities) {
+      setActivities(found.boardActivities);
+    }
+    alert(`Berhasil memuat preset "${found.title}" secara offline!`);
+  };
+
+  // Delete Preset Action
+  const handleDeletePreset = async (presetId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    if (!window.confirm("Apakah Anda yakin ingin menghapus preset aktivitas ini?")) return;
+    try {
+      await deleteDoc(doc(db, 'users', user.uid, 'savedActivities', presetId));
+    } catch (error) {
+      console.error("Gagal menghapus preset:", error);
+      alert("Gagal menghapus preset.");
+    }
+  };
 
   // Generate Groups Logic
   const handleAutoGroup = () => {
@@ -280,12 +365,62 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
             >
                 {isGeneratingActivities ? 'Sedang Membuat Aktivitas...' : 'Buat Aktivitas dengan AI'}
             </button>
+
+            {/* Offline-ready activity presets */}
+            {savedActivities.length > 0 && (
+              <div className={`mt-4 pt-4 border-t ${hasCustomBg ? 'border-white/15' : 'border-stone-200'} space-y-2`}>
+                <label className={`text-sm font-bold flex items-center gap-2 ${hasCustomBg ? 'text-sky-300' : 'text-sky-700'}`}>
+                  <FolderOpen size={16} /> Gunakan Preset Tersimpan (Bisa Diakses Offline)
+                </label>
+                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                  {savedActivities.map(p => (
+                    <div 
+                      key={p.id}
+                      onClick={() => handleLoadPreset(p.id)}
+                      className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800/45 border-slate-600 text-white hover:bg-slate-700/50' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
+                    >
+                      <span className="truncate max-w-[180px]">{p.title} <span className="text-[10px] opacity-60">({p.subject})</span></span>
+                      <button 
+                        onClick={(e) => handleDeletePreset(p.id, e)}
+                        className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
+                        title="Hapus Preset"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
           {/* Column 1: Activities Review */}
           <div>
-            <h2 className={`text-2xl font-semibold border-b-2 pb-2 mb-4 font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2 mb-4">
+              <h2 className={`text-2xl font-semibold font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
+              
+              {/* Save Preset Feature */}
+              {Object.keys(activities).length > 0 && (
+                <div className="flex items-center gap-1.5 self-end">
+                  <input
+                    type="text"
+                    placeholder="Nama preset... (e.g., Kuis IPA)"
+                    value={presetTitle}
+                    onChange={e => setPresetTitle(e.target.value)}
+                    className={`px-2 py-1 text-xs rounded border w-36 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`}
+                  />
+                  <button
+                    onClick={handleSavePreset}
+                    disabled={isSavingPreset}
+                    className="flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1 rounded text-xs font-bold transition-all hover:scale-105 shadow-sm disabled:opacity-50"
+                  >
+                    <Save size={12} />
+                    {isSavingPreset ? 'Saving...' : 'Simpan'}
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
               {[...Array(BOARD_SIZE)].map((_, i) => {
                 const squareNum = i + 1;

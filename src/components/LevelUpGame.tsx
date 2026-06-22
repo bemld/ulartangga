@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, ClassData } from '../types';
+import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, ClassData, SavedActivity } from '../types';
 import { PLAYER_COLORS } from '../constants';
 import { Type } from "@google/genai";
 import { generateAIContent } from '../services/aiService';
 import { VictoryScreen } from './VictoryScreen';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Shuffle, Star } from 'lucide-react';
+import { Shuffle, Star, FolderOpen, Save, Trash2 } from 'lucide-react';
 
 // --- TYPES INTERNAL ---
 type SetupStep = 'input' | 'review';
@@ -41,15 +41,94 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
     const [isGenerating, setIsGenerating] = useState(false);
     const [draftLevels, setDraftLevels] = useState<LevelContent>({});
 
-    // Load Classes
+    // Load Classes & Saved Presets State & Handlers
+    const [savedActivities, setSavedActivities] = useState<SavedActivity[]>([]);
+    const [presetTitle, setPresetTitle] = useState('');
+    const [isSavingPreset, setIsSavingPreset] = useState(false);
+
     useEffect(() => {
         if (!user) return;
         const q = query(collection(db, 'users', user.uid, 'classes'), orderBy('name'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             setClasses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClassData)));
+        }, (error) => {
+            console.error("Firestore classes load error:", error);
         });
         return unsubscribe;
     }, [user]);
+
+    useEffect(() => {
+        if (!user) return;
+        const q = query(collection(db, 'users', user.uid, 'savedActivities'), orderBy('createdAt', 'desc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SavedActivity));
+            setSavedActivities(list.filter(item => item.type === 'level-up'));
+        }, (error) => {
+            console.error("Firestore presets load error:", error);
+        });
+        return unsubscribe;
+    }, [user]);
+
+    const handleSavePreset = async () => {
+        if (!user) {
+            alert("Harap login terlebih dahulu.");
+            return;
+        }
+        if (!presetTitle.trim()) {
+            alert("Harap masukkan nama/judul preset ini.");
+            return;
+        }
+        if (Object.keys(draftLevels).length === 0) {
+            alert("Belum ada konten level untuk disimpan. Silakan buat/generate konten terlebih dahulu.");
+            return;
+        }
+        setIsSavingPreset(true);
+        try {
+            await addDoc(collection(db, 'users', user.uid, 'savedActivities'), {
+                title: presetTitle.trim(),
+                subject,
+                topic: objective,
+                grade,
+                type: 'level-up',
+                activityType,
+                levelContent: draftLevels,
+                createdAt: serverTimestamp()
+            });
+            setPresetTitle('');
+            alert("Preset Level Up berhasil disimpan ke local cache dan cloud!");
+        } catch (error) {
+            console.error("Gagal menyimpan preset:", error);
+            alert("Gagal menyimpan preset.");
+        } finally {
+            setIsSavingPreset(false);
+        }
+    };
+
+    const handleLoadPreset = (presetId: string) => {
+        const found = savedActivities.find(p => p.id === presetId);
+        if (!found) return;
+
+        setSubject(found.subject || '');
+        setObjective(found.topic || '');
+        setGrade(found.grade || '');
+        setActivityType(found.activityType || 'cognitive');
+        if (found.levelContent) {
+            setDraftLevels(found.levelContent);
+            setStep('review'); // instantly go to review mode to show loaded content
+        }
+        alert(`Berhasil memuat preset "${found.title}" secara offline!`);
+    };
+
+    const handleDeletePreset = async (presetId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!user || !window.confirm("Hapus preset ini?")) return;
+        try {
+            await deleteDoc(doc(db, 'users', user.uid, 'savedActivities', presetId));
+        } catch (error) {
+            console.error("Gagal menghapus preset:", error);
+            alert("Gagal menghapus preset.");
+        }
+    };
 
     const handleAutoGroup = () => {
         const cls = classes.find(c => c.id === selectedClassId);
@@ -193,6 +272,33 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                                     <span>Psikomotor (Gerak)</span>
                                 </label>
                             </div>
+
+                            {/* Saved Presets Load Panel */}
+                            {savedActivities.length > 0 && (
+                                <div className={`pt-4 border-t ${hasCustomBg ? 'border-white/10' : 'border-stone-200'} space-y-2`}>
+                                    <label className={`text-sm font-bold flex items-center gap-2 ${hasCustomBg ? 'text-sky-300' : 'text-sky-750'}`}>
+                                        <FolderOpen size={16} /> Gunakan Preset Tersimpan (Offline):
+                                    </label>
+                                    <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
+                                        {savedActivities.map(p => (
+                                            <div 
+                                                key={p.id}
+                                                onClick={() => handleLoadPreset(p.id)}
+                                                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800/40 border-slate-600 text-white hover:bg-slate-700/50' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
+                                            >
+                                                <span className="truncate max-w-[155px]">{p.title} <span className="text-[10px] opacity-60">({p.subject})</span></span>
+                                                <button 
+                                                    onClick={(e) => handleDeletePreset(p.id, e)}
+                                                    className="text-red-400 hover:text-red-650 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
+                                                    title="Hapus Preset"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
     
                         <div className="space-y-4">
@@ -278,9 +384,32 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className={`w-full max-w-6xl h-[90vh] flex flex-col rounded-2xl shadow-2xl p-6 border-2 ${hasCustomBg ? 'bg-black/80 border-white/20' : 'bg-stone-50 border-stone-200'}`}>
-                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 className={`text-3xl font-bold font-poppins ${textColor}`}>Review & Edit Level</h2>
-                    <button onClick={() => setStep('input')} className="text-sm text-red-400 hover:text-red-500 underline">Ubah Pengaturan Awal</button>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b pb-3">
+                    <div>
+                        <h2 className={`text-3xl font-bold font-poppins ${textColor}`}>Review & Edit Level</h2>
+                        <button onClick={() => setStep('input')} className="text-sm text-red-400 hover:text-red-500 underline">Ubah Pengaturan Awal</button>
+                    </div>
+
+                    {/* Save Level Up Preset */}
+                    {Object.keys(draftLevels).length > 0 && (
+                        <div className="flex items-center gap-2 bg-slate-800/10 p-1.5 rounded-lg border border-slate-500/20">
+                            <input
+                                type="text"
+                                placeholder="Nama preset level... (e.g. Kuis IPA 4)"
+                                value={presetTitle}
+                                onChange={e => setPresetTitle(e.target.value)}
+                                className={`px-2 py-1.5 text-xs rounded border w-44 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`}
+                            />
+                            <button
+                                onClick={handleSavePreset}
+                                disabled={isSavingPreset}
+                                className="flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-all hover:scale-105 shadow"
+                            >
+                                <Save size={13} />
+                                {isSavingPreset ? 'Simpan...' : 'Simpan Preset'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2 pb-4">

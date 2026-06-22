@@ -54,3 +54,17 @@ export interface ClassData {
   students: Student[];
   createdAt?: any;
 }
+
+export interface SavedActivity {
+  id: string;
+  title: string;
+  subject: string;
+  topic: string; // can represent topic or learning objective
+  grade: string;
+  type: 'snake-ladder' | 'level-up';
+  activityType: ActivityType;
+  boardActivities?: BoardActivities;
+  levelContent?: LevelContent;
+  createdAt?: any;
+}
+

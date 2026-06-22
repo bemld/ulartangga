@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Class": {
+      "title": "Class",
+      "description": "Educational class containing students",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "students": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "students"]
+    },
+    "SavedActivity": {
+      "title": "SavedActivity",
+      "description": "Saved board activities or level-up challenge presets",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "topic": { "type": "string" },
+        "grade": { "type": "string" },
+        "type": { "type": "string" },
+        "activityType": { "type": "string" },
+        "boardActivities": { "type": "object" },
+        "levelContent": { "type": "object" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "topic", "grade", "type", "activityType"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/classes/{classId}": {
+      "schema": "Class",
+      "description": "Daftar kelas yang dikelola guru"
+    },
+    "/users/{userId}/savedActivities/{activityId}": {
+      "schema": "SavedActivity",
+      "description": "Daftar preset aktivitas pelajaran yang disimpan"
+    }
+  }
+}
