@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { VisualSettings } from '../types';
 import { db } from '../firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { Users, GraduationCap, Activity, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface HomeScreenProps {
@@ -14,27 +14,70 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onStartLevelUp, onStartDesign, visualSettings }) => {
   const [dbUserCount, setDbUserCount] = useState<number>(0);
   const [dbStudentCount, setDbStudentCount] = useState<number>(0);
-  const [activeSessions, setActiveSessions] = useState<number>(24);
-
-  // Initial base offsets so the platform presents a professional, logical scale
-  const BASE_USER_OFFSET = 835;
-  const BASE_STUDENT_OFFSET = 8450; // Ratio ~10-12 students per teacher account
+  const [activeSessions, setActiveSessions] = useState<number>(1);
 
   useEffect(() => {
-    // 1. Listen real-time to registered users collection in Firestore
+    // --- 1. REALTIME ONLINE PRESENCE ENGINE ---
+    // Generate or retrieve session ID for this browser tab
+    let sessionId = sessionStorage.getItem('smartplay_session_id');
+    if (!sessionId) {
+      sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      sessionStorage.setItem('smartplay_session_id', sessionId);
+    }
+
+    const sessionDocRef = doc(db, 'online_sessions', sessionId);
+
+    // Function to ping presence heartbeat
+    const updatePresence = async () => {
+      try {
+        await setDoc(sessionDocRef, {
+          lastSeen: serverTimestamp(),
+          updatedAt: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Could not update presence heartbeat:", err);
+      }
+    };
+
+    // Send initial ping and set heartbeat interval every 10 seconds
+    updatePresence();
+    const heartbeatInterval = setInterval(updatePresence, 10000);
+
+    // Remove presence document on unload
+    const handleUnload = () => {
+      deleteDoc(sessionDocRef).catch(() => {});
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
+    // Listen to active online_sessions collection in real-time
+    const unsubPresence = onSnapshot(collection(db, 'online_sessions'), (snapshot) => {
+      const now = Date.now();
+      let liveCount = 0;
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        // Consider session active if updated within the last 35 seconds
+        if (data.updatedAt && (now - data.updatedAt) < 35000) {
+          liveCount++;
+        }
+      });
+      // Guarantee at least 1 for current active tab
+      setActiveSessions(Math.max(liveCount, 1));
+    }, (error) => {
+      console.warn("Realtime presence listener info:", error);
+    });
+
+    // --- 2. LISTEN REALTIME TO REGISTERED USERS IN FIRESTORE ---
     const unsubUsers = onSnapshot(collection(db, 'registered_users'), (snapshot) => {
       setDbUserCount(snapshot.size);
-      // Active live sessions = base active traffic + real active logged in accounts
-      setActiveSessions(24 + snapshot.size);
     }, (error) => {
       console.warn("Realtime user listener info:", error);
     });
 
-    // 2. Listen real-time to teacher uploaded student counts in Firestore
+    // --- 3. LISTEN REALTIME TO STUDENT COUNTS IN FIRESTORE ---
     const unsubStudents = onSnapshot(collection(db, 'user_student_counts'), (snapshot) => {
       let totalStudents = 0;
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         if (typeof data.count === 'number') {
           totalStudents += data.count;
         }
@@ -45,13 +88,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
     });
 
     return () => {
+      clearInterval(heartbeatInterval);
+      window.removeEventListener('beforeunload', handleUnload);
+      deleteDoc(sessionDocRef).catch(() => {});
       unsubUsers();
       unsubStudents();
+      unsubPresence();
     };
   }, []);
 
-  const totalRegisteredUsers = (BASE_USER_OFFSET + dbUserCount).toLocaleString('id-ID');
-  const totalStudents = (BASE_STUDENT_OFFSET + dbStudentCount).toLocaleString('id-ID');
+  const totalRegisteredUsers = dbUserCount.toLocaleString('id-ID');
+  const totalStudents = dbStudentCount.toLocaleString('id-ID');
 
   const containerStyle: React.CSSProperties = visualSettings.containerBackground
     ? { 
@@ -111,10 +158,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
               </div>
               <div className="text-left">
                 <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-sky-600">
-                  {totalRegisteredUsers}+
+                  {totalRegisteredUsers}
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
-                  Akun Guru & Pengguna
+                  Akun Terdaftar
                 </div>
               </div>
             </div>
@@ -128,7 +175,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
               </div>
               <div className="text-left">
                 <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-emerald-600">
-                  {totalStudents}+
+                  {totalStudents}
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
                   Siswa Terdata Database
