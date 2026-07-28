@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { VisualSettings } from '../types';
 import { db } from '../firebase';
-import { collection, doc, setDoc, deleteDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { Users, GraduationCap, Activity, ShieldCheck, Sparkles } from 'lucide-react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { Users, GraduationCap, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartSnakeLadder: () => void;
@@ -14,69 +14,19 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onStartLevelUp, onStartDesign, visualSettings }) => {
   const [dbUserCount, setDbUserCount] = useState<number>(0);
   const [dbStudentCount, setDbStudentCount] = useState<number>(0);
-  const [activeSessions, setActiveSessions] = useState<number>(1);
 
   const BASE_USER_OFFSET = 835;
   const BASE_STUDENT_OFFSET = 8450;
 
   useEffect(() => {
-    // --- 1. REALTIME ONLINE PRESENCE ENGINE ---
-    // Generate or retrieve session ID for this browser tab
-    let sessionId = sessionStorage.getItem('smartplay_session_id');
-    if (!sessionId) {
-      sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-      sessionStorage.setItem('smartplay_session_id', sessionId);
-    }
-
-    const sessionDocRef = doc(db, 'online_sessions', sessionId);
-
-    // Function to ping presence heartbeat
-    const updatePresence = async () => {
-      try {
-        await setDoc(sessionDocRef, {
-          lastSeen: serverTimestamp(),
-          updatedAt: Date.now()
-        }, { merge: true });
-      } catch (err) {
-        console.warn("Could not update presence heartbeat:", err);
-      }
-    };
-
-    // Send initial ping and set heartbeat interval every 10 seconds
-    updatePresence();
-    const heartbeatInterval = setInterval(updatePresence, 10000);
-
-    // Remove presence document on unload
-    const handleUnload = () => {
-      deleteDoc(sessionDocRef).catch(() => {});
-    };
-    window.addEventListener('beforeunload', handleUnload);
-
-    // Listen to active online_sessions collection in real-time
-    const unsubPresence = onSnapshot(collection(db, 'online_sessions'), (snapshot) => {
-      const now = Date.now();
-      let liveCount = 0;
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        // Consider session active if updated within the last 35 seconds
-        if (data.updatedAt && (now - data.updatedAt) < 35000) {
-          liveCount++;
-        }
-      });
-      // Guarantee at least 1 for current active tab
-      setActiveSessions(Math.max(liveCount, 1));
-    }, (error) => {
-      console.warn("Realtime presence listener info:", error);
-    });
-
-    // --- 2. LISTEN REALTIME TO REGISTERED USERS IN FIRESTORE ---
+    // --- 1. LISTEN REALTIME TO REGISTERED USERS IN FIRESTORE ---
     const unsubUsers = onSnapshot(collection(db, 'registered_users'), (snapshot) => {
       setDbUserCount(snapshot.size);
     }, (error) => {
       console.warn("Realtime user listener info:", error);
     });
 
-    // --- 3. LISTEN REALTIME TO STUDENT COUNTS IN FIRESTORE ---
+    // --- 2. LISTEN REALTIME TO STUDENT COUNTS IN FIRESTORE ---
     const unsubStudents = onSnapshot(collection(db, 'user_student_counts'), (snapshot) => {
       let totalStudents = 0;
       snapshot.forEach((docSnap) => {
@@ -91,12 +41,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
     });
 
     return () => {
-      clearInterval(heartbeatInterval);
-      window.removeEventListener('beforeunload', handleUnload);
-      deleteDoc(sessionDocRef).catch(() => {});
       unsubUsers();
       unsubStudents();
-      unsubPresence();
     };
   }, []);
 
@@ -135,7 +81,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
         </p>
 
         {/* --- PROMOTIONAL STATS BANNER --- */}
-        <div className={`mb-8 p-4 sm:p-5 rounded-2xl border backdrop-blur-md shadow-inner transition-all ${
+        <div className={`mb-8 p-4 sm:p-5 rounded-2xl border backdrop-blur-md shadow-inner transition-all max-w-3xl mx-auto ${
           visualSettings.containerBackground 
             ? 'bg-black/40 border-white/20 text-white' 
             : 'bg-gradient-to-r from-sky-50/80 via-white to-amber-50/80 border-sky-100/80 text-slate-800'
@@ -143,7 +89,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
           <div className="flex items-center justify-between mb-3 border-b border-slate-300/20 pb-2.5 px-1">
             <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-600 dark:text-sky-300">
               <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span>Statistik Pengguna & Keaktifan Platform</span>
+              <span>Statistik Pengguna & Data Platform</span>
             </div>
             <div className="flex items-center gap-1.5 text-[11px] font-semibold opacity-80">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
@@ -151,57 +97,37 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Stat 1: Total Registered Users */}
-            <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+            <div className={`p-4 rounded-xl border flex items-center gap-3.5 ${
               visualSettings.containerBackground ? 'bg-white/10 border-white/10' : 'bg-white/90 border-slate-200/80 shadow-sm'
             }`}>
-              <div className="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5" />
+              <div className="w-11 h-11 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0">
+                <Users className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-sky-600">
+                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-sky-600">
                   {totalRegisteredUsers}+
                 </div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
+                <div className="text-xs font-semibold text-slate-500 dark:text-slate-300">
                   Akun Terdaftar
                 </div>
               </div>
             </div>
 
             {/* Stat 2: Total Students Uploaded by Teachers */}
-            <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+            <div className={`p-4 rounded-xl border flex items-center gap-3.5 ${
               visualSettings.containerBackground ? 'bg-white/10 border-white/10' : 'bg-white/90 border-slate-200/80 shadow-sm'
             }`}>
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-5 h-5" />
+              <div className="w-11 h-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-emerald-600">
+                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-emerald-600">
                   {totalStudents}+
                 </div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
+                <div className="text-xs font-semibold text-slate-500 dark:text-slate-300">
                   Siswa Terdata Database
-                </div>
-              </div>
-            </div>
-
-            {/* Stat 3: Realtime Active Sessions */}
-            <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
-              visualSettings.containerBackground ? 'bg-white/10 border-white/10' : 'bg-white/90 border-slate-200/80 shadow-sm'
-            }`}>
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center flex-shrink-0 relative">
-                <Activity className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              </div>
-              <div className="text-left">
-                <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-amber-600 flex items-center gap-1">
-                  <span>{activeSessions}</span>
-                  <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">LIVE</span>
-                </div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
-                  Sesi Aktif Saat Ini
                 </div>
               </div>
             </div>
