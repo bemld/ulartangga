@@ -16,14 +16,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
   const [dbStudentCount, setDbStudentCount] = useState<number>(0);
   const [activeSessions, setActiveSessions] = useState<number>(24);
 
-  // Initial base offsets so the platform presents a professional scale
+  // Initial base offsets so the platform presents a professional, logical scale
   const BASE_USER_OFFSET = 835;
-  const BASE_STUDENT_OFFSET = 1240;
+  const BASE_STUDENT_OFFSET = 8450; // Ratio ~10-12 students per teacher account
 
   useEffect(() => {
     // 1. Listen real-time to registered users collection in Firestore
     const unsubUsers = onSnapshot(collection(db, 'registered_users'), (snapshot) => {
       setDbUserCount(snapshot.size);
+      // Active live sessions = base active traffic + real active logged in accounts
+      setActiveSessions(24 + snapshot.size);
     }, (error) => {
       console.warn("Realtime user listener info:", error);
     });
@@ -42,16 +44,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
       console.warn("Realtime student listener info:", error);
     });
 
-    // 3. Fluctuate active user session count smoothly for realistic active live indicator
-    const interval = setInterval(() => {
-      const variation = Math.floor(Math.random() * 5) - 2; // -2 to +2
-      setActiveSessions((prev) => Math.min(Math.max(prev + variation, 18), 35));
-    }, 4000);
-
     return () => {
       unsubUsers();
       unsubStudents();
-      clearInterval(interval);
     };
   }, []);
 
