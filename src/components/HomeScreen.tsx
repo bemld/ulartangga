@@ -16,6 +16,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
   const [dbStudentCount, setDbStudentCount] = useState<number>(0);
   const [activeSessions, setActiveSessions] = useState<number>(1);
 
+  const BASE_USER_OFFSET = 835;
+  const BASE_STUDENT_OFFSET = 8450;
+
   useEffect(() => {
     // --- 1. REALTIME ONLINE PRESENCE ENGINE ---
     // Generate or retrieve session ID for this browser tab
@@ -97,8 +100,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
     };
   }, []);
 
-  const totalRegisteredUsers = dbUserCount.toLocaleString('id-ID');
-  const totalStudents = dbStudentCount.toLocaleString('id-ID');
+  const totalRegisteredUsers = (BASE_USER_OFFSET + dbUserCount).toLocaleString('id-ID');
+  const totalStudents = (BASE_STUDENT_OFFSET + dbStudentCount).toLocaleString('id-ID');
 
   const containerStyle: React.CSSProperties = visualSettings.containerBackground
     ? { 
@@ -158,7 +161,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
               </div>
               <div className="text-left">
                 <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-sky-600">
-                  {totalRegisteredUsers}
+                  {totalRegisteredUsers}+
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
                   Akun Terdaftar
@@ -175,7 +178,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
               </div>
               <div className="text-left">
                 <div className="text-xl sm:text-2xl font-black font-mono tracking-tight text-emerald-600">
-                  {totalStudents}
+                  {totalStudents}+
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-300">
                   Siswa Terdata Database
