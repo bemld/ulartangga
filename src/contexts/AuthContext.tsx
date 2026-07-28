@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 interface AuthContextType {
   user: User | null;
@@ -22,25 +23,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Sync active user to Firestore for real-time account tracking
+  const syncUserToFirestore = async (u: User, name?: string) => {
+    try {
+      await setDoc(doc(db, 'registered_users', u.uid), {
+        uid: u.uid,
+        email: u.email || '',
+        displayName: name || u.displayName || 'Pengguna Smart Play',
+        lastActive: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Could not sync user document to Firestore:", e);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      if (currentUser) {
+        syncUserToFirestore(currentUser);
+      }
     });
     return unsubscribe;
   }, []);
 
   const loginWithEmail = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    if (userCredential.user) {
+      await syncUserToFirestore(userCredential.user);
+    }
   };
 
   const registerWithEmail = async (name: string, email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    // Update display name segera setelah registrasi agar nama guru muncul di UI
     if (userCredential.user) {
         await updateProfile(userCredential.user, {
             displayName: name
         });
+        await syncUserToFirestore(userCredential.user, name);
         // Force refresh user state untuk memastikan nama tampil
         setUser({ ...userCredential.user, displayName: name });
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, doc, addDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, setDoc, onSnapshot, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { ClassData, Student } from '../types';
 import * as XLSX from 'xlsx';
 import { Users, Upload, Plus, Trash2, X, Download, Edit2, Check, Save } from 'lucide-react';
@@ -44,6 +44,19 @@ export const ClassManager: React.FC<ClassManagerProps> = ({ onClose }) => {
       if (selectedClass) {
         const updatedSelected = classList.find(c => c.id === selectedClass.id);
         if (updatedSelected) setSelectedClass(updatedSelected);
+      }
+
+      // Sync total students uploaded by this teacher to public summary
+      const totalTeacherStudents = classList.reduce((acc, c) => acc + (c.students?.length || 0), 0);
+      try {
+        setDoc(doc(db, 'user_student_counts', user.uid), {
+          teacherId: user.uid,
+          teacherName: user.displayName || 'Guru',
+          count: totalTeacherStudents,
+          lastUpdated: serverTimestamp()
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Could not update user_student_counts:", e);
       }
     });
     return unsubscribe;
