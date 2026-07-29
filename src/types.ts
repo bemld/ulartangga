@@ -33,10 +33,17 @@ export interface VisualSettings {
 
 // --- Tipe Baru untuk Level Up Game ---
 
+export interface QuestionItem {
+  id: string;
+  question: string;
+  answerKey: string;
+}
+
 export interface LevelTask {
   level: number;
   difficulty: string;
-  content: string;
+  content?: string; // Legacy single content fallback
+  questions?: QuestionItem[]; // List of questions for shuffle/group count
 }
 
 export type LevelContent = Record<number, LevelTask>;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, ClassData, SavedActivity } from '../types';
+import { GameStage, Player, LevelContent, ActivityType, VisualSettings, LevelTask, QuestionItem, ClassData, SavedActivity } from '../types';
 import { PLAYER_COLORS } from '../constants';
 import { Type } from "@google/genai";
 import { generateAIContent } from '../services/aiService';
@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { generateSmartGroups } from '../utils/grouping';
-import { Shuffle, Star, FolderOpen, Save, Trash2, Award, Plus } from 'lucide-react';
+import { Shuffle, Star, FolderOpen, Save, Trash2, Award, Plus, Eye, EyeOff, Bot, CheckCircle2, XCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { PlayerPawn } from './PlayerPawn';
 
 // --- TYPES INTERNAL ---
@@ -131,7 +131,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
         if (found.customAwards && found.customAwards.length > 0) {
             setCustomAwards(found.customAwards);
         }
-        alert(`Berhasil memuat preset "${found.title}" secara offline!`);
+        alert(`Berhasil memuat preset "${found.title}"!`);
     };
 
     const handleDeletePreset = async (presetId: string, e: React.MouseEvent) => {
@@ -162,7 +162,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
         if (playerNames.length < PLAYER_COLORS.length) setPlayerNames([...playerNames, `Tim ${String.fromCharCode(65 + playerNames.length)}`]);
     };
 
-    // Step 1: Generate Content
+    // Step 1: Generate Content with Multiple Questions & Answer Keys per Level
     const handleGenerate = async () => {
         if (!subject || !grade || !objective) {
             alert("Mohon lengkapi Mata Pelajaran, Kelas, dan Tujuan Pembelajaran.");
@@ -175,26 +175,37 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                 ? "Pertanyaan Kuis/Soal (Kognitif)" 
                 : "Tantangan Fisik/Praktik (Psikomotor)";
 
-            const prompt = `Anda adalah desainer game edukasi level bertingkat. Buatlah 9 konten ${promptContext} untuk permainan "Level Up".
-            
-            Konteks:
-            - Mapel: ${subject}
-            - Kelas: ${grade}
-            - TUJUAN AKHIR (Level 9): ${objective}
+            const qCount = Math.max(playerNames.length, 3);
 
-            Aturan Tingkat Kesulitan:
-            - Level 1-2: Sangat Mudah (Pengenalan/Pemanasan).
-            - Level 3-4: Mudah.
-            - Level 5-6: Menengah.
-            - Level 7-8: Sulit.
-            - Level 9: PUNCAK (Harus menguji ketercapaian "${objective}").
+            const prompt = `Anda adalah desainer game edukasi bertingkat interaktif.
+Buatlah 9 level ${promptContext} untuk permainan "Level Up".
+Di SETIAP LEVEL (Level 1 sampai 9), buatlah tepat ${qCount} buah kartu pertanyaan tantangan yang BERBEDA untuk dikocok bagi kelompok siswa, LENGKAP DENGAN KUNCI JAWABAN masing-masing untuk koreksi AI.
 
-            Output JSON Array dengan 9 objek. Format:
-            [
-                { "level": 1, "difficulty": "Mudah", "content": "..." },
-                ...
-                { "level": 9, "difficulty": "Puncak", "content": "..." }
-            ]`;
+Konteks Pembelajaran:
+- Mata Pelajaran: ${subject}
+- Kelas/Fase: ${grade}
+- TUJUAN AKHIR (Level 9): ${objective}
+
+Tingkat Kesulitan:
+- Level 1-2: Sangat Mudah (Pengenalan/Pemanasan).
+- Level 3-4: Mudah.
+- Level 5-6: Menengah.
+- Level 7-8: Sulit.
+- Level 9: PUNCAK (Menguji ketercapaian "${objective}").
+
+Output HARUS dalam format JSON Array berisikan 9 objek level (level 1-9).
+Format JSON:
+[
+  {
+    "level": 1,
+    "difficulty": "Sangat Mudah",
+    "questions": [
+      { "id": "l1_q1", "question": "Pertanyaan 1...", "answerKey": "Kunci jawaban acuan 1..." },
+      { "id": "l1_q2", "question": "Pertanyaan 2...", "answerKey": "Kunci jawaban acuan 2..." }
+    ]
+  },
+  ...
+]`;
 
             const jsonText = await generateAIContent({
                 prompt,
@@ -206,39 +217,104 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                         properties: {
                             level: { type: Type.NUMBER },
                             difficulty: { type: Type.STRING },
-                            content: { type: Type.STRING }
+                            questions: {
+                                type: Type.ARRAY,
+                                items: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        id: { type: Type.STRING },
+                                        question: { type: Type.STRING },
+                                        answerKey: { type: Type.STRING }
+                                    },
+                                    required: ['question', 'answerKey']
+                                }
+                            }
                         },
-                        required: ['level', 'content', 'difficulty']
+                        required: ['level', 'difficulty', 'questions']
                     }
                 },
             });
 
-            const generatedData = JSON.parse(jsonText.trim()) as LevelTask[];
+            const generatedData = JSON.parse(jsonText.trim()) as any[];
             const contentMap: LevelContent = {};
             
             // Fill 1-9
-            for(let i=1; i<=9; i++) {
+            for (let i = 1; i <= 9; i++) {
                 const found = generatedData.find(d => d.level === i);
-                contentMap[i] = found || { level: i, difficulty: 'N/A', content: 'Konten tidak tergenerate' };
+                if (found && Array.isArray(found.questions) && found.questions.length > 0) {
+                    contentMap[i] = {
+                        level: i,
+                        difficulty: found.difficulty || 'Normal',
+                        questions: found.questions.map((q: any, idx: number) => ({
+                            id: q.id || `l${i}_q${idx + 1}_${Date.now()}`,
+                            question: q.question || '',
+                            answerKey: q.answerKey || ''
+                        }))
+                    };
+                } else {
+                    contentMap[i] = { 
+                        level: i, 
+                        difficulty: 'Normal', 
+                        questions: [
+                            { id: `l${i}_q1`, question: `Soal Tantangan Level ${i}`, answerKey: 'Kunci jawaban dasar.' }
+                        ] 
+                    };
+                }
             }
 
             setDraftLevels(contentMap);
-            setStep('review'); // Pindah ke mode edit
+            setStep('review'); // Go to review & edit screen
 
         } catch (error) {
-            console.error(error);
-            alert("Gagal membuat konten AI. Cek API Key.");
+            console.error("Generate content error:", error);
+            alert("Gagal membuat konten AI. Mohon periksa API Key atau koneksi internet.");
         } finally {
             setIsGenerating(false);
         }
     };
 
-    // Step 2: Update Manual
-    const handleUpdateLevelContent = (level: number, newContent: string) => {
-        setDraftLevels(prev => ({
-            ...prev,
-            [level]: { ...prev[level], content: newContent }
-        }));
+    // Step 2: Update Manual Question / Answer Key
+    const handleUpdateQuestion = (level: number, qIndex: number, field: 'question' | 'answerKey', value: string) => {
+        setDraftLevels(prev => {
+            const levelData = prev[level] || { level, difficulty: 'Normal', questions: [] };
+            const questions = [...(levelData.questions || [])];
+            if (!questions[qIndex]) {
+                questions[qIndex] = { id: `q_${Date.now()}_${qIndex}`, question: '', answerKey: '' };
+            }
+            questions[qIndex] = { ...questions[qIndex], [field]: value };
+            return {
+                ...prev,
+                [level]: { ...levelData, questions }
+            };
+        });
+    };
+
+    const handleAddQuestionToLevel = (level: number) => {
+        setDraftLevels(prev => {
+            const levelData = prev[level] || { level, difficulty: 'Normal', questions: [] };
+            const questions = [...(levelData.questions || [])];
+            questions.push({
+                id: `q_${Date.now()}_${questions.length + 1}`,
+                question: `Pertanyaan Tantangan ${questions.length + 1}`,
+                answerKey: `Kunci jawaban singkat`
+            });
+            return {
+                ...prev,
+                [level]: { ...levelData, questions }
+            };
+        });
+    };
+
+    const handleRemoveQuestionFromLevel = (level: number, qIndex: number) => {
+        setDraftLevels(prev => {
+            const levelData = prev[level];
+            if (!levelData || !levelData.questions) return prev;
+            const questions = levelData.questions.filter((_, idx) => idx !== qIndex);
+            return {
+                ...prev,
+                [level]: { ...levelData, questions }
+            };
+        });
     };
 
     // Step 3: Start Game
@@ -268,7 +344,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                     <div className="relative text-center">
                         <button onClick={onBack} className={`absolute left-0 top-0 text-sm font-bold ${hasCustomBg ? 'text-sky-300' : 'text-sky-600'}`}>← Kembali</button>
                         <h1 className={`text-4xl font-bold font-poppins ${textColor}`}>Setup Level Up</h1>
-                        <p className={subTextColor}>Taklukkan 9 Tingkat Tantangan!</p>
+                        <p className={subTextColor}>Taklukkan 9 Tingkat Tantangan Berbasis AI!</p>
                     </div>
     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -383,7 +459,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                                                     <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-650 p-1 font-bold text-xs" title="Hapus">✕</button>
                                                 </div>
                                                 <div className="flex items-center justify-between pt-1 border-t border-slate-400/20">
-                                                    <span className={`text-[11px] font-bold ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Model Pion 3D:</span>
+                                                    <span className={`text-[11px] font-bold ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Model Pion:</span>
                                                     <div className="flex gap-1.5">
                                                         {[
                                                             { label: '👦 Anak', value: 'kid' },
@@ -483,7 +559,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                             disabled={isGenerating}
                             className="w-full bg-orange-600 text-white text-xl font-bold py-4 rounded-xl shadow-lg hover:bg-orange-700 disabled:bg-slate-500 transition-all transform hover:scale-105"
                         >
-                            {isGenerating ? 'Sedang Meracik Level...' : 'Buat Konten & Review'}
+                            {isGenerating ? 'Sedang Meracik Soal & Kunci Jawaban...' : 'Buat Soal + Kunci Jawaban & Review'}
                         </button>
                     </div>
                  </div>
@@ -491,14 +567,15 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
         );
     }
 
-    // --- RENDER STEP 2: REVIEW ---
+    // --- RENDER STEP 2: REVIEW & EDIT SOAL + KUNCI JAWABAN ---
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
             <div className={`w-full max-w-6xl h-[90vh] flex flex-col rounded-2xl shadow-2xl p-6 border-2 ${hasCustomBg ? 'bg-black/80 border-white/20' : 'bg-stone-50 border-stone-200'}`}>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b pb-3">
                     <div>
-                        <h2 className={`text-3xl font-bold font-poppins ${textColor}`}>Review & Edit Level</h2>
-                        <button onClick={() => setStep('input')} className="text-sm text-red-400 hover:text-red-500 underline">Ubah Pengaturan Awal</button>
+                        <h2 className={`text-3xl font-bold font-poppins ${textColor}`}>Review & Edit Soal + Kunci Jawaban</h2>
+                        <p className="text-xs text-slate-400">Guru dapat mengubah/menambah soal dan kunci jawaban acuan AI sebelum memulai.</p>
+                        <button onClick={() => setStep('input')} className="text-xs text-red-400 hover:text-red-500 underline mt-1">← Ubah Pengaturan Awal</button>
                     </div>
 
                     {/* Save Level Up Preset */}
@@ -506,7 +583,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                         <div className="flex items-center gap-2 bg-slate-800/10 p-1.5 rounded-lg border border-slate-500/20">
                             <input
                                 type="text"
-                                placeholder="Nama preset level... (e.g. Kuis IPA 4)"
+                                placeholder="Nama preset... (e.g. Kuis IPA 4)"
                                 value={presetTitle}
                                 onChange={e => setPresetTitle(e.target.value)}
                                 className={`px-2 py-1.5 text-xs rounded border w-44 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`}
@@ -525,21 +602,74 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
 
                 <div className="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-2 pb-4">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((levelNum) => {
-                        const data = draftLevels[levelNum];
+                        const levelData = draftLevels[levelNum];
+                        const questions = levelData?.questions || (
+                            levelData?.content 
+                              ? [{ id: `q_${levelNum}_0`, question: levelData.content, answerKey: 'Sesuai konteks jawaban siswa.' }]
+                              : [{ id: `q_${levelNum}_0`, question: `Soal Tantangan Level ${levelNum}`, answerKey: 'Kunci jawaban dasar.' }]
+                        );
+
                         return (
-                            <div key={levelNum} className={`p-4 rounded-lg border-2 flex flex-col ${hasCustomBg ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                <div className="flex justify-between mb-2">
-                                    <span className="font-bold text-orange-500">Level {levelNum}</span>
-                                    <span className="text-xs bg-slate-200 px-2 py-1 rounded text-slate-700">{data?.difficulty}</span>
+                            <div key={levelNum} className={`p-4 rounded-xl border-2 flex flex-col space-y-3 ${hasCustomBg ? 'bg-slate-800/90 border-slate-600' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                <div className="flex justify-between items-center border-b pb-2 border-slate-300/30">
+                                    <span className="font-extrabold text-orange-500 text-base">Level {levelNum}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">{levelData?.difficulty || 'Normal'}</span>
+                                        <span className="text-[10px] font-semibold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">{questions.length} Kartu Soal</span>
+                                    </div>
                                 </div>
-                                <textarea 
-                                    value={data?.content || ''}
-                                    onChange={(e) => handleUpdateLevelContent(levelNum, e.target.value)}
-                                    className={`flex-grow w-full p-2 text-sm rounded border resize-none focus:ring-2 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-900 text-white border-slate-700' : 'bg-slate-50 text-slate-800 border-slate-300'}`}
-                                    rows={4}
-                                />
+
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                                    {questions.map((q, qIdx) => (
+                                        <div key={q.id || qIdx} className={`p-2.5 rounded-lg border text-xs space-y-1.5 ${hasCustomBg ? 'bg-slate-900/80 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+                                            <div className="flex items-center justify-between font-bold text-slate-500">
+                                                <span className="text-orange-600">Kartu Soal #{qIdx + 1}</span>
+                                                {questions.length > 1 && (
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => handleRemoveQuestionFromLevel(levelNum, qIdx)} 
+                                                        className="text-red-400 hover:text-red-600 text-[10px] p-0.5 font-bold"
+                                                        title="Hapus Kartu Ini"
+                                                    >
+                                                        ✕ Hapus
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-sky-600 mb-0.5">Soal / Tantangan:</label>
+                                                <textarea
+                                                    value={q.question}
+                                                    onChange={(e) => handleUpdateQuestion(levelNum, qIdx, 'question', e.target.value)}
+                                                    className={`w-full p-2 text-xs rounded border resize-none focus:ring-1 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-950 text-white border-slate-800' : 'bg-white text-slate-800 border-slate-300'}`}
+                                                    rows={2}
+                                                    placeholder="Masukkan pertanyaan..."
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-emerald-600 mb-0.5">🔑 Kunci Jawaban (Acuan Koreksi AI):</label>
+                                                <textarea
+                                                    value={q.answerKey}
+                                                    onChange={(e) => handleUpdateQuestion(levelNum, qIdx, 'answerKey', e.target.value)}
+                                                    className={`w-full p-2 text-xs rounded border resize-none focus:ring-1 focus:ring-emerald-500 ${hasCustomBg ? 'bg-slate-950 text-emerald-300 border-slate-800' : 'bg-emerald-50/60 text-emerald-900 border-emerald-300'}`}
+                                                    rows={2}
+                                                    placeholder="Masukkan kunci jawaban acuan AI..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleAddQuestionToLevel(levelNum)}
+                                    className="w-full py-1.5 border border-dashed border-orange-400 text-orange-600 hover:bg-orange-50 rounded text-xs font-bold flex items-center justify-center gap-1 transition-colors"
+                                >
+                                    <Plus size={13} /> Tambah Kartu Soal
+                                </button>
                             </div>
-                        )
+                        );
                     })}
                 </div>
 
@@ -569,6 +699,14 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     const [levels, setLevels] = useState<LevelContent>({});
     const [activeGroupIndex, setActiveGroupIndex] = useState<number | null>(null);
     const [modalTask, setModalTask] = useState<LevelTask | null>(null);
+    const [activeQuestion, setActiveQuestion] = useState<QuestionItem | null>(null);
+    
+    // Interactive Student Answer & AI Evaluation States
+    const [studentAnswer, setStudentAnswer] = useState<string>('');
+    const [showAnswerKey, setShowAnswerKey] = useState<boolean>(false);
+    const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
+    const [aiEvaluation, setAiEvaluation] = useState<{ passed: boolean; score: number; feedback: string } | null>(null);
+    
     const [winner, setWinner] = useState<Player | null>(null);
     const [characterStars, setCharacterStars] = useState<number>(0);
     const [customAwards, setCustomAwards] = useState<string[]>([]);
@@ -582,12 +720,97 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
 
     const handleGroupClick = (index: number) => {
         const player = players[index];
-        // Jika sudah menang (seharusnya tidak mungkin diklik jika UI dilock), return
         if (player.position > 9) return;
         
         setActiveGroupIndex(index);
-        setModalTask(levels[player.position]);
-        setCharacterStars(0); // Reset star rating
+        const currentLevelTask = levels[player.position];
+        setModalTask(currentLevelTask);
+
+        // Pick / Shuffle a question item from questions array
+        const qPool = currentLevelTask?.questions && currentLevelTask.questions.length > 0
+            ? currentLevelTask.questions
+            : [{ id: 'q_legacy', question: currentLevelTask?.content || 'Tantangan Level', answerKey: 'Sesuai analisis guru' }];
+        
+        const randomCard = qPool[Math.floor(Math.random() * qPool.length)];
+        setActiveQuestion(randomCard);
+
+        // Reset modal fields
+        setStudentAnswer('');
+        setShowAnswerKey(false);
+        setAiEvaluation(null);
+        setCharacterStars(0);
+    };
+
+    const handleReshuffleQuestion = () => {
+        if (!modalTask) return;
+        const qPool = modalTask.questions && modalTask.questions.length > 0
+            ? modalTask.questions
+            : [{ id: 'q_legacy', question: modalTask.content || 'Tantangan Level', answerKey: 'Sesuai analisis guru' }];
+        
+        const nextCard = qPool[Math.floor(Math.random() * qPool.length)];
+        setActiveQuestion(nextCard);
+        setStudentAnswer('');
+        setAiEvaluation(null);
+    };
+
+    const handleEvaluateAnswerWithAI = async () => {
+        if (!studentAnswer.trim()) {
+            alert("Harap ketikkan jawaban siswa/kelompok terlebih dahulu.");
+            return;
+        }
+        if (!activeQuestion) return;
+
+        setIsEvaluating(true);
+        setAiEvaluation(null);
+
+        try {
+            const prompt = `Anda adalah penilai dan evaluator kuis edukasi interaktif ramah anak sekolah.
+Tugas Anda: Evaluasi secara Cermat & Fleksibel apakah Jawaban Siswa secara LOGIKA & MAKNA sudah BENAR / MENDEKATI Kunci Jawaban.
+
+Soal Tantangan:
+"${activeQuestion.question}"
+
+Kunci Jawaban Acuan:
+"${activeQuestion.answerKey}"
+
+Jawaban Siswa:
+"${studentAnswer}"
+
+Petunjuk Evaluasi:
+1. Pahami inti/maksud dari Kunci Jawaban. Jawaban siswa tidak harus persis kata demi kata, cukup esensi logisnya benar.
+2. Jika jawaban siswa secara logika benar, nyatakan LULUS ("passed": true, score 75-100).
+3. Jika jawaban siswa masih salah, ngawur, atau tidak relevan, nyatakan BELUM LULUS ("passed": false, score 0-60).
+4. Berikan "feedback" ramah (2-3 kalimat) dalam bahasa Indonesia, berikan penjelasan edukatif singkat kenapa benar atau bagian mana yang perlu diperbaiki.
+
+Output HARUS JSON persis:
+{
+  "passed": true,
+  "score": 85,
+  "feedback": "Bagus sekali! Jawaban kelompok kamu sudah tepat..."
+}`;
+
+            const jsonRes = await generateAIContent({
+                prompt,
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        passed: { type: Type.BOOLEAN },
+                        score: { type: Type.NUMBER },
+                        feedback: { type: Type.STRING }
+                    },
+                    required: ['passed', 'score', 'feedback']
+                }
+            });
+
+            const result = JSON.parse(jsonRes.trim());
+            setAiEvaluation(result);
+        } catch (err) {
+            console.error("Gagal melakukan evaluasi AI:", err);
+            alert("Terjadi kendala saat menghubungi AI. Guru dapat tetap menentukan kelulusan secara manual.");
+        } finally {
+            setIsEvaluating(false);
+        }
     };
 
     const handleValidation = (passed: boolean) => {
@@ -613,8 +836,10 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
             });
         }
         setModalTask(null);
+        setActiveQuestion(null);
         setActiveGroupIndex(null);
         setCharacterStars(0);
+        setAiEvaluation(null);
     };
 
     if (stage === GameStage.Setup) {
@@ -641,10 +866,10 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                 {/* --- BOARD AREA --- */}
                 <div className="flex-grow relative bg-slate-200/50 rounded-2xl border-4 border-slate-400 p-4 sm:p-8 flex items-center justify-center min-h-[600px]">
                     
-                    {/* Container Board (Responsive but Large) */}
+                    {/* Container Board */}
                     <div className="relative w-full max-w-3xl aspect-square">
                         
-                        {/* SVG Connector Lines (The Road) - PRECISE COORDINATES 0-300 */}
+                        {/* SVG Connector Lines */}
                         <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible" viewBox="0 0 300 300" preserveAspectRatio="none">
                              <defs>
                                 <filter id="roadShadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -652,14 +877,13 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                 </filter>
                             </defs>
                             
-                            {/* Base Road (Thick Asphalt) - 50 units wide */}
                             <path 
                                 d="M 50 250 L 250 250 
                                    C 300 250 300 150 250 150
                                    L 50 150
                                    C 0 150 0 50 50 50
                                    L 250 50"
-                                stroke="#475569" // Slate-600 (Dark Asphalt)
+                                stroke="#475569"
                                 strokeWidth="50" 
                                 fill="none" 
                                 strokeLinecap="round"
@@ -667,28 +891,26 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                 filter="url(#roadShadow)"
                             />
 
-                             {/* Road Border (Lighter Edge) */}
                              <path 
                                 d="M 50 250 L 250 250 
                                    C 300 250 300 150 250 150
                                    L 50 150
                                    C 0 150 0 50 50 50
                                    L 250 50"
-                                stroke="#64748b" // Slate-500
+                                stroke="#64748b"
                                 strokeWidth="44" 
                                 fill="none" 
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
 
-                            {/* Road Markings (Yellow Dashed Line) */}
                              <path 
                                 d="M 50 250 L 250 250 
                                    C 300 250 300 150 250 150
                                    L 50 150
                                    C 0 150 0 50 50 50
                                    L 250 50"
-                                stroke="#facc15" // Yellow-400
+                                stroke="#facc15"
                                 strokeWidth="4" 
                                 fill="none" 
                                 strokeLinecap="round"
@@ -708,8 +930,8 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
 
                 {/* --- CONTROLS AREA --- */}
                 <div className={`w-full lg:w-96 flex-shrink-0 p-4 sm:p-6 rounded-2xl border-2 overflow-y-auto max-h-[80vh] ${bgClass}`}>
-                    <h2 className="text-xl font-bold mb-4 text-center border-b pb-2">Kontrol Guru</h2>
-                    <p className="mb-4 text-sm text-center opacity-80">Klik kelompok untuk memberi tantangan.</p>
+                    <h2 className="text-xl font-bold mb-2 text-center border-b pb-2">Kontrol Guru</h2>
+                    <p className="mb-4 text-xs text-center opacity-80">Klik tombol "Uji" pada kelompok untuk mengocok kartu soal & meminta AI mengoreksi jawaban.</p>
                     
                     <div className="space-y-3">
                         {players.map((p, idx) => {
@@ -721,9 +943,9 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                     disabled={!!winner}
                                     className={`w-full flex items-center p-3 rounded-lg border-2 transition-transform hover:scale-105 ${isFinished ? 'bg-emerald-500 border-emerald-600' : 'bg-slate-700/50 border-transparent hover:border-yellow-400'}`}
                                 >
-                                    <div className={`w-8 h-8 rounded-full ${p.color} mr-3 border border-white`}></div>
+                                    <div className={`w-8 h-8 rounded-full ${p.color} mr-3 border border-white flex-shrink-0`}></div>
                                     <div className="text-left flex-grow">
-                                        <div className="font-bold text-white">{p.name}</div>
+                                        <div className="font-bold text-white text-sm">{p.name}</div>
                                         <div className="flex justify-between items-center mt-1">
                                              <div className="text-xs text-slate-300">Level: {isFinished ? '🏆 SELESAI' : p.position}</div>
                                              <div className="flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded-full">
@@ -732,8 +954,8 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                                              </div>
                                         </div>
                                     </div>
-                                    <div className="ml-2 bg-white/20 px-3 py-1 rounded text-white font-bold text-sm">
-                                        {isFinished ? 'Win' : 'Uji'}
+                                    <div className="ml-2 bg-white/20 px-3 py-1 rounded text-white font-bold text-xs">
+                                        {isFinished ? 'Win' : 'Uji AI'}
                                     </div>
                                 </button>
                             );
@@ -742,66 +964,154 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
                 </div>
             </div>
 
-            {/* Task Modal */}
-            {modalTask && activeGroupIndex !== null && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-2xl rounded-2xl p-8 border-4 border-yellow-400 relative animate-content-fade">
-                        <div className="absolute -top-6 -left-6 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-lg text-2xl font-bold text-yellow-900">
+            {/* TASK MODAL WITH SHUFFLED CARD & AI CORRECTION */}
+            {modalTask && activeGroupIndex !== null && activeQuestion && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl p-6 sm:p-8 border-4 border-yellow-400 relative animate-content-fade my-auto shadow-2xl">
+                        <div className="absolute -top-5 -left-5 w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-lg text-2xl font-bold text-yellow-900">
                             {modalTask.level}
                         </div>
                         
-                        <h2 className="text-center text-3xl font-bold font-caveat text-slate-800 mb-2">
-                            Tantangan {players[activeGroupIndex].name}
-                        </h2>
-                        <div className="text-center mb-6">
-                            <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
-                                Tingkat: {modalTask.difficulty}
-                            </span>
+                        <div className="text-center mb-4">
+                            <h2 className="text-2xl sm:text-3xl font-bold font-caveat text-slate-800">
+                                Tantangan {players[activeGroupIndex].name}
+                            </h2>
+                            <div className="flex items-center justify-center gap-2 mt-1">
+                                <span className="bg-slate-200 text-slate-700 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    Tingkat: {modalTask.difficulty}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleReshuffleQuestion}
+                                    className="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors border border-amber-300"
+                                    title="Kocok ulang kartu soal lain untuk level ini"
+                                >
+                                    <RefreshCw size={12} /> Kocok Soal Lain
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 mb-6 min-h-[150px] flex items-center justify-center text-center overflow-y-auto max-h-[30vh]">
-                            <p className="text-xl sm:text-2xl font-medium text-slate-800 whitespace-pre-wrap">{modalTask.content}</p>
+                        {/* SHUFFLED QUESTION CARD */}
+                        <div className="bg-gradient-to-b from-yellow-50 to-amber-50/80 p-5 rounded-2xl border-2 border-yellow-300 mb-4 shadow-inner text-center">
+                            <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+                                <Sparkles size={13} className="text-amber-500" /> Kartu Soal Acak
+                            </div>
+                            <p className="text-lg sm:text-xl font-bold text-slate-800 whitespace-pre-wrap leading-snug">
+                                {activeQuestion.question}
+                            </p>
                         </div>
+
+                        {/* TEACHER PEEK ANSWER KEY TOGGLE */}
+                        <div className="mb-4">
+                            <button
+                                type="button"
+                                onClick={() => setShowAnswerKey(!showAnswerKey)}
+                                className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg border border-sky-200 transition-colors"
+                            >
+                                {showAnswerKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                                {showAnswerKey ? "Sembunyikan Kunci Jawaban" : "👁️ Intip Kunci Jawaban (Khusus Guru)"}
+                            </button>
+                            
+                            {showAnswerKey && (
+                                <div className="mt-2 p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left text-xs font-medium text-emerald-950 animate-fadeIn">
+                                    <span className="font-bold text-emerald-800 block mb-0.5">🔑 Kunci Jawaban Acuan:</span>
+                                    {activeQuestion.answerKey}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* STUDENT ANSWER INPUT */}
+                        <div className="mb-4 text-left">
+                            <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                                ✍️ Ketik Jawaban / Hasil Diskusi Kelompok:
+                            </label>
+                            <textarea
+                                value={studentAnswer}
+                                onChange={(e) => setStudentAnswer(e.target.value)}
+                                placeholder="Ketik jawaban siswa di sini untuk dikoreksi AI..."
+                                rows={3}
+                                className="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-slate-800 font-medium text-sm resize-none"
+                            />
+                            
+                            <button
+                                type="button"
+                                onClick={handleEvaluateAnswerWithAI}
+                                disabled={isEvaluating || !studentAnswer.trim()}
+                                className="mt-2 w-full bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 text-sm"
+                            >
+                                <Bot className={isEvaluating ? "animate-spin text-amber-300" : "text-amber-300"} size={18} />
+                                {isEvaluating ? "AI Sedang Mengevaluasi Logika Jawaban..." : "🤖 Koreksi & Evaluasi Jawaban dengan AI"}
+                            </button>
+                        </div>
+
+                        {/* AI EVALUATION RESULT BANNER */}
+                        {aiEvaluation && (
+                            <div className={`p-4 rounded-xl border-2 mb-4 text-left animate-fadeIn ${
+                                aiEvaluation.passed 
+                                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950' 
+                                    : 'bg-amber-50 border-amber-400 text-amber-950'
+                            }`}>
+                                <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-2 font-black text-sm sm:text-base">
+                                        {aiEvaluation.passed 
+                                            ? <CheckCircle2 className="text-emerald-600 flex-shrink-0" size={20} />
+                                            : <XCircle className="text-amber-600 flex-shrink-0" size={20} />
+                                        }
+                                        <span>{aiEvaluation.passed ? "🎉 AI: LULUS! Logika Jawaban Benar" : "⚠️ AI: BELUM LULUS (Perlu Diperbaiki)"}</span>
+                                    </div>
+                                    <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${aiEvaluation.passed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'}`}>
+                                        Skor: {aiEvaluation.score}/100
+                                    </span>
+                                </div>
+                                <p className="text-xs font-medium leading-relaxed mt-1 opacity-95">{aiEvaluation.feedback}</p>
+                            </div>
+                        )}
                         
-                        {/* Character Rating Section */}
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 text-center">
-                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wide mb-2">Penilaian Karakter (Oleh Guru)</h3>
+                        {/* CHARACTER RATING SECTION */}
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-5 text-center">
+                            <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-1">
+                                Penilaian Karakter & Sikap Kelompok (Oleh Guru)
+                            </h3>
                             <div className="flex justify-center gap-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
+                                        type="button"
                                         onClick={() => setCharacterStars(star)}
                                         className="transition-transform hover:scale-125 focus:outline-none"
                                     >
                                         <Star 
-                                            size={32} 
+                                            size={28} 
                                             className={`${star <= characterStars ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'} transition-colors`} 
                                         />
                                     </button>
                                 ))}
                             </div>
-                            <p className="text-xs text-slate-400 mt-1">Pilih bintang (1-5) untuk mengaktifkan tombol lulus.</p>
+                            <p className="text-[11px] text-slate-500 mt-1">Pilih bintang (1-5) untuk memberikan nilai apresiasi karakter.</p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* VALIDATION ACTION BUTTONS */}
+                        <div className="grid grid-cols-2 gap-3">
                             <button 
+                                type="button"
                                 onClick={() => handleValidation(false)}
-                                className="bg-red-100 text-red-700 font-bold py-4 rounded-xl hover:bg-red-200 transition-colors border-2 border-red-200"
+                                className="bg-red-100 text-red-700 font-bold py-3 px-2 rounded-xl hover:bg-red-200 transition-colors border-2 border-red-200 text-sm"
                             >
-                                ❌ Belum
-                                <span className="block text-xs font-normal opacity-70 mt-1">Tetap di Level {modalTask.level}</span>
+                                ❌ Belum Lulus
+                                <span className="block text-[10px] font-normal opacity-80 mt-0.5">Tetap di Level {modalTask.level}</span>
                             </button>
                             <button 
+                                type="button"
                                 onClick={() => handleValidation(true)}
                                 disabled={characterStars === 0}
-                                className={`font-bold py-4 rounded-xl transition-colors shadow-lg border-2 transform 
+                                className={`font-bold py-3 px-2 rounded-xl transition-all shadow-lg border-2 text-sm
                                     ${characterStars === 0 
                                         ? 'bg-slate-300 text-slate-500 border-slate-400 cursor-not-allowed' 
-                                        : 'bg-emerald-500 text-white hover:bg-emerald-600 border-emerald-400 hover:scale-105'
+                                        : 'bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-500 hover:scale-[1.02]'
                                     }`}
                             >
-                                {modalTask.level === 9 ? '🏆 JUARA!' : '✅ LULUS!'}
-                                <span className="block text-xs font-normal opacity-90 mt-1">
+                                {modalTask.level === 9 ? '🏆 JUARA!' : '✅ LULUS & NAIK LEVEL'}
+                                <span className="block text-[10px] font-normal opacity-90 mt-0.5">
                                     {characterStars === 0 ? 'Beri Bintang Karakter Dulu' : `Dapat ${5 + characterStars} Bintang & Naik Level`}
                                 </span>
                             </button>
@@ -839,7 +1149,6 @@ const LevelNode: React.FC<{ level: number, players: Player[], levels: LevelConte
                         key={p.id} 
                         className={`absolute transition-all duration-500`}
                         style={{ 
-                            // Spread players slightly so they don't overlap perfectly
                             transform: `translate(${i * 14 - (playersHere.length-1)*7}px, -15px) scale(0.7)`,
                             width: '48px',
                             height: '60px'
@@ -854,7 +1163,6 @@ const LevelNode: React.FC<{ level: number, players: Player[], levels: LevelConte
                 ))}
             </div>
             
-             {/* Difficulty Label (Optional, maybe too cluttered for mobile) */}
              {!isBoss && (
                  <div className="absolute bottom-2 text-[10px] text-slate-700 font-bold bg-white/90 px-2 py-0.5 rounded-full backdrop-blur-sm shadow-sm z-30 border border-slate-300">
                      {levels[level]?.difficulty}
