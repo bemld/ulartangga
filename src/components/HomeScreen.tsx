@@ -62,71 +62,103 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center relative py-8">
       <div 
-        className={`rounded-2xl shadow-2xl shadow-black/30 p-6 sm:p-10 max-w-5xl w-full border-2 border-stone-200/50 ${!visualSettings.containerBackground ? defaultClasses : ''}`}
+        className={`rounded-2xl shadow-2xl p-6 sm:p-10 max-w-5xl w-full border-2 ${
+          visualSettings.containerBackground 
+            ? 'bg-slate-950/85 backdrop-blur-md border-amber-500/40 text-white shadow-black/80' 
+            : 'border-stone-200/80 ' + defaultClasses
+        }`}
         style={containerStyle}
       >
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 font-semibold text-xs sm:text-sm mb-3">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 -ml-4"></span>
-          <span className={`${visualSettings.containerBackground ? 'text-emerald-300' : 'text-emerald-700'} font-bold`}>
+        <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs sm:text-sm font-bold mb-4 shadow-sm ${
+          visualSettings.containerBackground 
+            ? 'bg-slate-950/90 border-emerald-400 text-emerald-300' 
+            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800'
+        }`}>
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 -ml-4.5"></span>
+          <span>
             DATABASE REALTIME FIRESTORE TERHUBUNG
           </span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-bold text-slate-800 mb-2 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
+        <h1 className={`text-4xl sm:text-6xl font-black mb-2 font-poppins tracking-tight ${
+          visualSettings.containerBackground 
+            ? 'text-amber-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]' 
+            : 'text-slate-800'
+        }`}>
           Smart Play
         </h1>
-        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-6 font-poppins drop-shadow-sm" style={{ color: visualSettings.containerBackground ? 'white' : '' }}>
+        <p className={`text-base sm:text-lg max-w-2xl mx-auto mb-6 font-poppins font-medium ${
+          visualSettings.containerBackground 
+            ? 'text-slate-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]' 
+            : 'text-slate-600'
+        }`}>
           Platform Pembelajaran Interaktif & Permainan Edukatif Berbasis Kelas
         </p>
 
         {/* --- PROMOTIONAL STATS BANNER --- */}
-        <div className={`mb-8 p-4 sm:p-5 rounded-2xl border backdrop-blur-md shadow-inner transition-all max-w-3xl mx-auto ${
+        <div className={`mb-8 p-4 sm:p-6 rounded-2xl border backdrop-blur-md shadow-xl transition-all max-w-3xl mx-auto ${
           visualSettings.containerBackground 
-            ? 'bg-black/40 border-white/20 text-white' 
-            : 'bg-gradient-to-r from-sky-50/80 via-white to-amber-50/80 border-sky-100/80 text-slate-800'
+            ? 'bg-slate-950/90 border-amber-400/30 text-white' 
+            : 'bg-gradient-to-r from-sky-50/90 via-white to-amber-50/90 border-sky-200 text-slate-800 shadow-sm'
         }`}>
-          <div className="flex items-center justify-between mb-3 border-b border-slate-300/20 pb-2.5 px-1">
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-sky-600 dark:text-sky-300">
-              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
+          <div className="flex items-center justify-between mb-4 border-b border-slate-700/40 pb-2.5 px-1">
+            <div className={`flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-wider ${
+              visualSettings.containerBackground ? 'text-amber-300' : 'text-sky-700'
+            }`}>
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
               <span>Statistik Pengguna & Data Platform</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold opacity-80">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <div className={`flex items-center gap-1.5 text-[11px] font-bold ${
+              visualSettings.containerBackground ? 'text-emerald-300' : 'text-emerald-700'
+            }`}>
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Terverifikasi Realtime</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Stat 1: Total Registered Users */}
-            <div className={`p-4 rounded-xl border flex items-center gap-3.5 ${
-              visualSettings.containerBackground ? 'bg-white/10 border-white/10' : 'bg-white/90 border-slate-200/80 shadow-sm'
+            <div className={`p-4 rounded-xl border flex items-center gap-4 ${
+              visualSettings.containerBackground 
+                ? 'bg-slate-900/90 border-slate-700 text-white' 
+                : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-11 h-11 rounded-lg bg-sky-500/10 text-sky-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center flex-shrink-0 border border-sky-400/30">
                 <Users className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-sky-600">
+                <div className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${
+                  visualSettings.containerBackground ? 'text-sky-300' : 'text-sky-600'
+                }`}>
                   {totalRegisteredUsers}+
                 </div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-300">
+                <div className={`text-xs font-bold ${
+                  visualSettings.containerBackground ? 'text-slate-100' : 'text-slate-600'
+                }`}>
                   Akun Terdaftar
                 </div>
               </div>
             </div>
 
             {/* Stat 2: Total Students Uploaded by Teachers */}
-            <div className={`p-4 rounded-xl border flex items-center gap-3.5 ${
-              visualSettings.containerBackground ? 'bg-white/10 border-white/10' : 'bg-white/90 border-slate-200/80 shadow-sm'
+            <div className={`p-4 rounded-xl border flex items-center gap-4 ${
+              visualSettings.containerBackground 
+                ? 'bg-slate-900/90 border-slate-700 text-white' 
+                : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-11 h-11 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-400/30">
                 <GraduationCap className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-emerald-600">
+                <div className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${
+                  visualSettings.containerBackground ? 'text-emerald-300' : 'text-emerald-600'
+                }`}>
                   {totalStudents}+
                 </div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-300">
+                <div className={`text-xs font-bold ${
+                  visualSettings.containerBackground ? 'text-slate-100' : 'text-slate-600'
+                }`}>
                   Siswa Terdata Database
                 </div>
               </div>
@@ -137,43 +169,82 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
         <div className="flex flex-col md:flex-row justify-center items-stretch gap-6">
             
             {/* --- Game 1: Ular Tangga --- */}
-            <div className={`flex-1 p-6 rounded-xl border-2 transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30 border-white/20' : 'bg-white border-stone-200'}`}>
-                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Ular Tangga Klasik</h2>
-                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
-                    Permainan dadu klasik dengan Tali dan Tangga. Cocok untuk review materi santai.
-                </p>
+            <div className={`flex-1 p-6 rounded-2xl border-2 transition-all hover:scale-[1.02] flex flex-col justify-between ${
+              visualSettings.containerBackground 
+                ? 'bg-slate-950/90 border-slate-700 text-white shadow-xl' 
+                : 'bg-white border-stone-200'
+            }`}>
+                <div>
+                  <h2 className={`text-2xl font-black mb-2 font-poppins ${
+                    visualSettings.containerBackground ? 'text-amber-300' : 'text-slate-800'
+                  }`}>
+                    Ular Tangga Klasik
+                  </h2>
+                  <p className={`mb-5 text-sm font-medium ${
+                    visualSettings.containerBackground ? 'text-slate-100' : 'text-slate-600'
+                  }`}>
+                      Permainan dadu klasik dengan Tali dan Tangga. Cocok untuk review materi santai.
+                  </p>
+                </div>
                 <button
+                    type="button"
                     onClick={onStartSnakeLadder}
-                    className="w-full bg-sky-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-sky-700 shadow-lg"
+                    className="w-full bg-sky-600 text-white font-bold text-lg py-3 rounded-xl hover:bg-sky-500 shadow-md transition-all"
                 >
                     Main Ular Tangga
                 </button>
             </div>
 
             {/* --- Game 2: Level Up (NEW) --- */}
-            <div className={`flex-1 p-6 rounded-xl border-2 border-yellow-400/50 relative overflow-hidden transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30' : 'bg-white'}`}>
-                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-bl-lg">BARU!</div>
-                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Level Up Adventure</h2>
-                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
-                    Taklukkan 9 Level bertingkat. Tantangan makin sulit hingga mencapai puncak!
-                </p>
+            <div className={`flex-1 p-6 rounded-2xl border-2 border-yellow-400 relative overflow-hidden transition-all hover:scale-[1.02] flex flex-col justify-between ${
+              visualSettings.containerBackground 
+                ? 'bg-slate-950/90 text-white shadow-xl' 
+                : 'bg-white'
+            }`}>
+                <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-950 text-xs font-black px-3 py-1 rounded-bl-xl shadow-md">BARU!</div>
+                <div>
+                  <h2 className={`text-2xl font-black mb-2 font-poppins ${
+                    visualSettings.containerBackground ? 'text-amber-300' : 'text-slate-800'
+                  }`}>
+                    Level Up Adventure
+                  </h2>
+                  <p className={`mb-5 text-sm font-medium ${
+                    visualSettings.containerBackground ? 'text-slate-100' : 'text-slate-600'
+                  }`}>
+                      Taklukkan 9 Level bertingkat. Tantangan makin sulit hingga mencapai puncak!
+                  </p>
+                </div>
                 <button
+                    type="button"
                     onClick={onStartLevelUp}
-                    className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-orange-700 shadow-lg"
+                    className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-xl hover:bg-orange-500 shadow-md transition-all"
                 >
                     Main Level Up
                 </button>
             </div>
              
              {/* --- Design Studio --- */}
-            <div className={`flex-1 p-6 rounded-xl border-2 transition-all hover:scale-105 ${visualSettings.containerBackground ? 'bg-black/30 border-white/20' : 'bg-white border-stone-200'}`}>
-                <h2 className={`text-2xl font-bold mb-2 font-poppins ${visualSettings.containerBackground ? 'text-white' : 'text-slate-700'}`}>Studio Desain</h2>
-                <p className={`mb-4 text-sm ${visualSettings.containerBackground ? 'text-slate-300' : 'text-slate-500'}`}>
-                    Kustomisasi tampilan papan dan latar belakang permainan agar lebih menarik.
-                </p>
+            <div className={`flex-1 p-6 rounded-2xl border-2 transition-all hover:scale-[1.02] flex flex-col justify-between ${
+              visualSettings.containerBackground 
+                ? 'bg-slate-950/90 border-slate-700 text-white shadow-xl' 
+                : 'bg-white border-stone-200'
+            }`}>
+                <div>
+                  <h2 className={`text-2xl font-black mb-2 font-poppins ${
+                    visualSettings.containerBackground ? 'text-amber-300' : 'text-slate-800'
+                  }`}>
+                    Studio Desain
+                  </h2>
+                  <p className={`mb-5 text-sm font-medium ${
+                    visualSettings.containerBackground ? 'text-slate-100' : 'text-slate-600'
+                  }`}>
+                      Kustomisasi tampilan papan dan latar belakang permainan agar lebih menarik.
+                  </p>
+                </div>
                 <button
+                    type="button"
                     onClick={onStartDesign}
-                    className="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-emerald-700 shadow-lg"
+                    className="w-full bg-emerald-600 text-white font-bold text-lg py-3 rounded-xl hover:bg-emerald-500 shadow-md transition-all"
                 >
                     Atur Desain
                 </button>

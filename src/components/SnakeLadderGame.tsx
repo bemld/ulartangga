@@ -226,34 +226,66 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
   const pendingQuestion = currentPlayer ? pendingQuestions[currentPlayer.id] : null;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row items-center md:items-start justify-center p-4 sm:p-6 lg:p-8 gap-6 md:gap-8">
-      <main className="w-full flex-grow">
-        <GameBoard
-          players={players}
-          snakes={snakes}
-          ladders={ladders}
-          currentPlayerId={currentPlayer?.id ?? -1}
-          visualSettings={visualSettings}
-        />
-      </main>
-      <aside className="w-full md:w-80 lg:w-96 flex-shrink-0">
-        {currentPlayer && (
-          <GameControls
+    <div className="min-h-screen flex flex-col items-center justify-start p-4 sm:p-6 lg:p-8 gap-6 max-w-7xl mx-auto">
+      {/* Top Game Navigation Header */}
+      <div className="w-full flex flex-wrap items-center justify-between bg-slate-900/90 backdrop-blur-md p-3 px-5 rounded-2xl border-2 border-slate-700/80 shadow-xl text-white gap-3 z-10">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm('Apakah Anda yakin ingin kembali ke menu utama? Permainan saat ini akan berakhir.')) {
+              onBackToMenu();
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white rounded-xl font-bold text-sm border border-slate-600 transition-all cursor-pointer shadow-md hover:scale-105"
+        >
+          ← Kembali ke Menu Utama
+        </button>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('Apakah Anda yakin ingin mengubah atau mengulang pengaturan permainan?')) {
+                handleResetGame();
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-sm transition-all cursor-pointer shadow-md hover:scale-105"
+          >
+            ⚙️ Ulangi Pengaturan
+          </button>
+        </div>
+      </div>
+
+      <div className="w-full flex flex-col md:flex-row items-center md:items-start justify-center gap-6 md:gap-8">
+        <main className="w-full flex-grow">
+          <GameBoard
             players={players}
-            currentPlayer={currentPlayer}
-            onRollDice={handleRollDice}
-            onReset={handleResetGame}
-            onGoHome={onBackToMenu}
-            diceResult={diceResult}
-            isRolling={isRolling}
-            canRoll={canRoll}
-            activityType={activityType}
-            pendingQuestion={pendingQuestion}
-            onAnswerCorrect={handleAnswerCorrect}
-            onAnswerIncorrect={handleAnswerIncorrect}
+            snakes={snakes}
+            ladders={ladders}
+            currentPlayerId={currentPlayer?.id ?? -1}
+            visualSettings={visualSettings}
           />
-        )}
-      </aside>
+        </main>
+        <aside className="w-full md:w-80 lg:w-96 flex-shrink-0">
+          {currentPlayer && (
+            <GameControls
+              players={players}
+              currentPlayer={currentPlayer}
+              onRollDice={handleRollDice}
+              onReset={handleResetGame}
+              onGoHome={onBackToMenu}
+              diceResult={diceResult}
+              isRolling={isRolling}
+              canRoll={canRoll}
+              activityType={activityType}
+              pendingQuestion={pendingQuestion}
+              onAnswerCorrect={handleAnswerCorrect}
+              onAnswerIncorrect={handleAnswerIncorrect}
+            />
+          )}
+        </aside>
+      </div>
+
       {activeActivity && (
         <ActivityModal
           activity={activeActivity.content}

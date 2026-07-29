@@ -357,10 +357,19 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
       >
         <div className="text-center relative">
           <button
-            onClick={onBack}
-            className={`absolute top-0 left-0 flex items-center gap-1 text-sm font-bold transition-colors px-2.5 py-1 rounded-lg ${hasCustomBg ? 'bg-slate-900/80 text-sky-300 hover:text-sky-100 border border-slate-700' : 'bg-stone-100 text-sky-700 hover:text-sky-900'}`}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onBack();
+            }}
+            className={`absolute top-0 left-0 z-30 flex items-center gap-1.5 text-sm font-extrabold transition-all px-3.5 py-1.5 rounded-xl shadow-md cursor-pointer hover:scale-105 ${
+              hasCustomBg 
+                ? 'bg-slate-900 text-amber-300 hover:text-white border-2 border-amber-400/80 shadow-black' 
+                : 'bg-white text-sky-800 hover:text-sky-950 border-2 border-sky-300 hover:border-sky-500'
+            }`}
           >
-            ← Kembali
+            ← Kembali ke Menu
           </button>
           <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-amber-300 drop-shadow-md' : 'text-slate-800'}`}>Smart Play</h1>
           <p className={`mt-2 text-lg font-medium ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Permainan Edukatif Anda</p>
