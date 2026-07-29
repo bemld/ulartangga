@@ -14,3 +14,29 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Register Service Worker for offline capability (PWA)
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => {
+        console.log('Service Worker registered successfully for offline support:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
+  });
+} else if ('serviceWorker' in navigator) {
+  // Register in dev mode as well if needed
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => {
+        console.log('Service Worker registered:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('Service Worker registration error:', err);
+      });
+  });
+}
