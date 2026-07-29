@@ -43,6 +43,20 @@ export const ActivityModal: React.FC<ActivityModalProps> = ({
       return;
     }
 
+    // Pengecekan instan jika jawaban siswa persis / mirip dengan kunci jawaban
+    const normalizeText = (text: string) => text.toLowerCase().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, ' ').trim();
+    const studentNorm = normalizeText(studentAnswer);
+    const keyNorm = normalizeText(answerKeyText);
+
+    if (studentNorm && keyNorm && (studentNorm === keyNorm || (keyNorm.length >= 3 && studentNorm.includes(keyNorm)))) {
+      setAiEvaluation({
+        passed: true,
+        score: 100,
+        feedback: `✨ Tepat Sekali! Jawaban "${studentAnswer}" sesuai 100% dengan Kunci Jawaban Acuan. Analisis presisi instan mengonfirmasi kebenaran jawaban!`
+      });
+      return;
+    }
+
     setIsEvaluating(true);
     setAiEvaluation(null);
 

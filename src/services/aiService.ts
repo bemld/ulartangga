@@ -43,7 +43,7 @@ export const generateAIContent = async (request: AIServiceRequest): Promise<stri
       }
 
       const response = await ai.models.generateContent({
-        model: request.model || "gemini-3-flash-preview",
+        model: request.model || "gemini-2.5-flash",
         contents: request.prompt,
         config,
       });
