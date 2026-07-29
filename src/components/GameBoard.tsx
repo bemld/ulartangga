@@ -109,9 +109,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ players, snakes, ladders, 
           <div
             key={num}
             id={`square-${num}`}
-            className={`rounded-md flex items-start justify-end p-2 ${bgColor} border ${visualSettings.containerBackground ? 'border-white/20' : 'border-stone-300/50'} shadow-inner`}
+            className={`rounded-md flex items-start justify-end p-1.5 ${bgColor} border ${visualSettings.containerBackground ? 'border-slate-700/60 bg-slate-900/40 backdrop-blur-xs' : 'border-stone-300/50'} shadow-inner`}
           >
-            <span className={`font-bold text-sm sm:text-lg ${visualSettings.containerBackground ? 'text-white/80' : 'text-slate-500'}`}>{num}</span>
+            <span className={`font-extrabold text-xs sm:text-sm px-1.5 py-0.5 rounded ${visualSettings.containerBackground ? 'bg-slate-950/85 text-amber-300 border border-slate-700/80 shadow-md font-mono' : 'bg-stone-300/80 text-slate-800'}`}>{num}</span>
           </div>
         ))}
       </div>

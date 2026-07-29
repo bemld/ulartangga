@@ -25,7 +25,7 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [diceResult, setDiceResult] = useState(1);
   const [isRolling, setIsRolling] = useState(false);
-  const [activeActivity, setActiveActivity] = useState<{ square: number; content: string } | null>(null);
+  const [activeActivity, setActiveActivity] = useState<{ square: number; content: string | import('../types').BoardActivityItem } | null>(null);
   const [winner, setWinner] = useState<Player | null>(null);
   const [canRoll, setCanRoll] = useState(true);
 
@@ -164,7 +164,8 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
     if (activityContent) {
         setActiveActivity({ square: finalPosition, content: activityContent });
         if (activityType === 'cognitive') {
-            setPendingQuestions(prev => ({ ...prev, [currentPlayer.id]: activityContent }));
+            const questionText = typeof activityContent === 'string' ? activityContent : activityContent.question;
+            setPendingQuestions(prev => ({ ...prev, [currentPlayer.id]: questionText }));
         }
     }
 
@@ -257,6 +258,7 @@ export const SnakeLadderGame: React.FC<SnakeLadderGameProps> = ({ visualSettings
         <ActivityModal
           activity={activeActivity.content}
           squareNumber={activeActivity.square}
+          activityType={activityType}
           onClose={handleCloseModal}
         />
       )}

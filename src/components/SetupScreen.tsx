@@ -256,17 +256,16 @@ Buatlah tugas untuk SETIAP KOTAK dari nomor 2 hingga ${BOARD_SIZE - 1}. Total ha
 Kembalikan hasilnya dalam format JSON berupa sebuah ARRAY. Setiap elemen dalam array harus berupa OBJEK dengan dua properti: 'square' (nomor kotak sebagai ANGKA) dan 'activity' (tugas praktik sebagai STRING).
 Contoh format: [ { "square": 2, "activity": "Lakukan gerakan menendang bola ke depan sebanyak 5 kali (tanpa bola)." }, { "square": 3, "activity": "Tiru gerakan seorang kiper menangkap bola 3 kali." }, ... ]`;
         } else { // 'cognitive'
-            prompt = `Anda adalah seorang guru ahli yang merancang kuis untuk permainan Ular Tangga edukatif. Buatlah serangkaian pertanyaan singkat dan menarik yang secara EKSKLUSIF berfokus pada konteks berikut:
+            prompt = `Anda adalah seorang guru ahli yang merancang kuis untuk permainan Ular Tangga edukatif. Buatlah serangkaian pertanyaan singkat beserta KUNCI JAWABAN ACUAN ringkas yang secara EKSKLUSIF berfokus pada konteks berikut:
 - Mata Pelajaran: ${subject}
 - Materi: ${topic}
 - Tingkat: ${grade}
 
 PENTING: Semua pertanyaan HARUS relevan dengan materi (${topic}) dan sesuai untuk pemahaman siswa tingkat ${grade}. JANGAN membuat tugas fisik atau peragaan.
+Buatlah pertanyaan dan kunci jawaban acuan untuk SETIAP KOTAK dari nomor 2 hingga ${BOARD_SIZE - 1}. Total harus ada ${BOARD_SIZE - 2} pertanyaan. Jangan menempatkan aktivitas di kotak 1 atau kotak terakhir (${BOARD_SIZE}).
 
-Buatlah pertanyaan untuk SETIAP KOTAK dari nomor 2 hingga ${BOARD_SIZE - 1}. Total harus ada ${BOARD_SIZE - 2} pertanyaan. Jangan menempatkan aktivitas di kotak 1 atau kotak terakhir (${BOARD_SIZE}).
-
-Kembalikan hasilnya dalam format JSON berupa sebuah ARRAY. Setiap elemen dalam array harus berupa OBJEK dengan dua properti: 'square' (nomor kotak sebagai ANGKA) dan 'activity' (pertanyaan sebagai STRING).
-Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "square": 3, "activity": "Sebutkan 3 pahlawan nasional." }, ... ]`;
+Kembalikan hasilnya dalam format JSON berupa sebuah ARRAY. Setiap elemen dalam array harus berupa OBJEK dengan tiga properti: 'square' (nomor kotak sebagai ANGKA), 'activity' (pertanyaan sebagai STRING), dan 'answerKey' (kunci jawaban acuan ringkas sebagai STRING).
+Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey": "Jakarta" }, { "square": 3, "activity": "Sebutkan 3 pahlawan nasional.", "answerKey": "Soekarno, Hatta, Diponegoro" }, ... ]`;
         }
         
         const jsonText = await generateAIContent({
@@ -284,6 +283,10 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
                         activity: {
                             type: Type.STRING,
                             description: 'Teks pertanyaan atau tugas untuk kotak ini.'
+                        },
+                        answerKey: {
+                            type: Type.STRING,
+                            description: 'Kunci jawaban acuan untuk pertanyaan ini (khusus mode kognitif).'
                         }
                     },
                     required: ['square', 'activity']
@@ -291,12 +294,19 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
             },
         });
         
-        const generatedItems: { square: number; activity: string }[] = JSON.parse(jsonText.trim());
+        const generatedItems: { square: number; activity: string; answerKey?: string }[] = JSON.parse(jsonText.trim());
         
         const newActivities: BoardActivities = {};
         for (const item of generatedItems) {
             if (item.square && item.activity) {
-                newActivities[item.square] = item.activity;
+                if (activityType === 'cognitive') {
+                    newActivities[item.square] = {
+                        question: item.activity,
+                        answerKey: item.answerKey || ''
+                    };
+                } else {
+                    newActivities[item.square] = item.activity;
+                }
             }
         }
         setActivities(newActivities);
@@ -334,31 +344,31 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
       }
     : {};
 
-  const defaultClasses = "bg-stone-50";
+  const defaultClasses = "bg-stone-50 text-slate-800";
   const hasCustomBg = !!visualSettings.containerBackground;
-  const inputClass = `w-full p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`;
+  const inputClass = `w-full p-2 border rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium text-sm ${hasCustomBg ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'}`;
 
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 pb-20">
       <div 
-        className={`w-full max-w-5xl rounded-2xl shadow-2xl shadow-black/30 p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'border-white/20' : 'border-stone-200'} ${!hasCustomBg ? defaultClasses : ''}`}
+        className={`w-full max-w-5xl rounded-2xl shadow-2xl p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'bg-slate-950/85 backdrop-blur-md border-slate-700/80 text-white shadow-black/60' : 'border-stone-200 shadow-black/30 ' + defaultClasses}`}
         style={containerStyle}
       >
         <div className="text-center relative">
           <button
             onClick={onBack}
-            className={`absolute top-0 left-0 flex items-center gap-1 text-sm font-semibold transition-colors ${hasCustomBg ? 'text-sky-300 hover:text-sky-100' : 'text-sky-600 hover:text-sky-800'}`}
+            className={`absolute top-0 left-0 flex items-center gap-1 text-sm font-bold transition-colors px-2.5 py-1 rounded-lg ${hasCustomBg ? 'bg-slate-900/80 text-sky-300 hover:text-sky-100 border border-slate-700' : 'bg-stone-100 text-sky-700 hover:text-sky-900'}`}
           >
             ← Kembali
           </button>
-          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-800'}`}>Smart Play</h1>
-          <p className={`mt-2 text-lg ${hasCustomBg ? 'text-slate-200' : 'text-slate-500'}`}>Atur Permainan Edukatif Anda</p>
+          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-amber-300 drop-shadow-md' : 'text-slate-800'}`}>Smart Play</h1>
+          <p className={`mt-2 text-lg font-medium ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Permainan Edukatif Anda</p>
         </div>
 
         {/* AI Activity Generation Section */}
-        <div className={`p-6 rounded-xl border ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-stone-100 border-stone-300'}`}>
-            <h2 className={`text-2xl font-semibold mb-4 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>1. Tentukan Konteks Pembelajaran</h2>
+        <div className={`p-6 rounded-xl border ${hasCustomBg ? 'bg-slate-900/90 border-slate-700 shadow-inner' : 'bg-stone-100 border-stone-300'}`}>
+            <h2 className={`text-2xl font-bold mb-4 font-poppins ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>1. Tentukan Konteks Pembelajaran</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <input type="text" placeholder="Mata Pelajaran (e.g., Sejarah)" value={subject} onChange={e => setSubject(e.target.value)} className={inputClass}/>
                 <input type="text" placeholder="Materi Spesifik (e.g., Proklamasi)" value={topic} onChange={e => setTopic(e.target.value)} className={inputClass}/>
@@ -440,16 +450,52 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?" }, { "squar
             <div className="max-h-[450px] overflow-y-auto space-y-3 pr-3">
               {[...Array(BOARD_SIZE)].map((_, i) => {
                 const squareNum = i + 1;
+                const act = activities[squareNum];
+                const questionVal = typeof act === 'string' ? act : (act?.question || '');
+                const answerKeyVal = typeof act === 'object' ? (act?.answerKey || '') : '';
+
                 return (
-                  <div key={squareNum}>
-                    <label className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Kotak {squareNum}:</label>
+                  <div key={squareNum} className={`p-2.5 rounded-lg border ${hasCustomBg ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-stone-200'}`}>
+                    <label className={`font-bold text-xs block mb-1 ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>
+                      Kotak {squareNum} {activityType === 'cognitive' ? '🧠 (Kognitif)' : '🤸 (Psikomotor)'}:
+                    </label>
                     <textarea
-                      value={activities[squareNum] || ''}
-                      onChange={(e) => handleActivityChange(squareNum, e.target.value)}
-                      placeholder="Kosong (atau isi manual)"
+                      value={questionVal}
+                      onChange={(e) => {
+                        const newQ = e.target.value;
+                        if (activityType === 'cognitive') {
+                          setActivities(prev => ({
+                            ...prev,
+                            [squareNum]: { question: newQ, answerKey: answerKeyVal }
+                          }));
+                        } else {
+                          handleActivityChange(squareNum, newQ);
+                        }
+                      }}
+                      placeholder={activityType === 'cognitive' ? "Pertanyaan kuis..." : "Instruksi tugas praktik..."}
                       className={inputClass}
                       rows={2}
                     />
+                    {activityType === 'cognitive' && (
+                      <div className="mt-1.5">
+                        <label className={`text-[11px] font-semibold flex items-center gap-1 ${hasCustomBg ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                          🔑 Kunci Jawaban (Acuan AI):
+                        </label>
+                        <input
+                          type="text"
+                          value={answerKeyVal}
+                          onChange={(e) => {
+                            const newKey = e.target.value;
+                            setActivities(prev => ({
+                              ...prev,
+                              [squareNum]: { question: questionVal, answerKey: newKey }
+                            }));
+                          }}
+                          placeholder="Masukkan kunci jawaban acuan AI..."
+                          className={`w-full p-1.5 text-xs rounded border mt-0.5 ${hasCustomBg ? 'bg-slate-950 text-emerald-300 border-slate-700' : 'bg-emerald-50/70 border-emerald-300 text-emerald-950'}`}
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })}

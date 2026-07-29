@@ -181,9 +181,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onStartSnakeLadder, onSt
 
         </div>
       </div>
-       <footer className={`mt-6 font-caveat text-2xl tracking-wider drop-shadow-md ${visualSettings.containerBackground ? 'text-white/90' : 'text-slate-600'}`}>
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
+        <a 
+          href="https://forms.gle/WSLkMpAq6wD3sq9n8" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-sm rounded-full shadow-lg transition-all hover:scale-105 border border-amber-300/40"
+        >
+          📋 Kirim Aduan, Kritik & Saran Guru/Siswa
+        </a>
+      </div>
+      <footer className={`mt-4 font-caveat text-2xl tracking-wider drop-shadow-md ${visualSettings.containerBackground ? 'text-white/90' : 'text-slate-600'}`}>
             Created By Besa Metiar Lasna Desy
-        </footer>
+      </footer>
     </div>
   );
 };

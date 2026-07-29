@@ -22,7 +22,12 @@ export interface SnakeOrLadder {
   end: number;
 }
 
-export type BoardActivities = Record<number, string>;
+export interface BoardActivityItem {
+  question: string;
+  answerKey?: string;
+}
+
+export type BoardActivities = Record<number, string | BoardActivityItem>;
 
 export type ActivityType = 'cognitive' | 'psychomotor';
 

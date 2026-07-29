@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Settings, Palette, User } from 'lucide-react';
+import { LogOut, Settings, Palette, User, MessageSquarePlus } from 'lucide-react';
 
 interface TopBarProps {
   onOpenClassManager: () => void;
@@ -13,9 +13,24 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenClassManager, onOpenDesign
 
   return (
     <div className="w-full h-16 bg-white/90 backdrop-blur-md border-b border-stone-200 flex items-center justify-between px-4 sm:px-6 fixed top-0 left-0 z-50 shadow-sm">
-      <div className="flex items-center gap-2">
-         <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold font-caveat text-xl">S</div>
-         <span className="font-bold text-slate-800 font-poppins text-lg hidden sm:block">SmartPlay</span>
+      <div className="flex items-center gap-2 sm:gap-4">
+         <div className="flex items-center gap-2">
+           <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold font-caveat text-xl">S</div>
+           <span className="font-bold text-slate-800 font-poppins text-lg hidden sm:block">SmartPlay</span>
+         </div>
+
+         {/* Form Aduan / Saran Button */}
+         <a 
+           href="https://forms.gle/WSLkMpAq6wD3sq9n8" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-xs sm:text-sm rounded-full shadow-sm transition-all hover:scale-105"
+           title="Kirim Aduan, Kritik & Saran"
+         >
+            <MessageSquarePlus size={16} />
+            <span className="hidden sm:inline">Aduan & Saran</span>
+            <span className="sm:hidden">Saran</span>
+         </a>
       </div>
 
       <div className="relative">
@@ -53,6 +68,16 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenClassManager, onOpenDesign
                         <Palette size={16} />
                         Studio Desain
                     </button>
+                    <a 
+                        href="https://forms.gle/WSLkMpAq6wD3sq9n8" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="w-full text-left px-4 py-3 text-sm text-amber-700 hover:bg-amber-50 flex items-center gap-2 transition-colors font-semibold"
+                    >
+                        <MessageSquarePlus size={16} />
+                        Form Aduan & Saran
+                    </a>
                     <div className="border-t border-slate-100 my-1"></div>
                     <button 
                         onClick={logout}

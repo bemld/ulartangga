@@ -331,18 +331,18 @@ Format JSON:
     };
 
     const hasCustomBg = !!visualSettings.containerBackground;
-    const textColor = hasCustomBg ? 'text-white' : 'text-slate-800';
+    const textColor = hasCustomBg ? 'text-amber-300 font-bold' : 'text-slate-800 font-bold';
     const subTextColor = hasCustomBg ? 'text-slate-200' : 'text-slate-600';
-    const inputClass = `w-full p-3 rounded border focus:ring-2 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white placeholder-slate-400' : 'bg-white border-slate-300'}`;
+    const inputClass = `w-full p-3 rounded border focus:ring-2 focus:ring-orange-500 font-medium text-sm ${hasCustomBg ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400'}`;
 
     // --- RENDER STEP 1: INPUT ---
     if (step === 'input') {
         return (
             <div className="min-h-screen flex items-center justify-center p-4">
-                 <div className={`w-full max-w-4xl rounded-2xl shadow-2xl p-8 border-2 space-y-6 ${hasCustomBg ? 'bg-black/40 border-white/20' : 'bg-stone-50 border-stone-200'}`} style={visualSettings.containerBackground ? { backgroundImage: `url(${visualSettings.containerBackground})`, backgroundSize: 'cover' } : {}}>
+                 <div className={`w-full max-w-4xl rounded-2xl shadow-2xl p-8 border-2 space-y-6 ${hasCustomBg ? 'bg-slate-950/85 backdrop-blur-md border-slate-700/80 text-white shadow-black/60' : 'bg-stone-50 border-stone-200'}`} style={visualSettings.containerBackground ? { backgroundImage: `url(${visualSettings.containerBackground})`, backgroundSize: 'cover' } : {}}>
                     
                     <div className="relative text-center">
-                        <button onClick={onBack} className={`absolute left-0 top-0 text-sm font-bold ${hasCustomBg ? 'text-sky-300' : 'text-sky-600'}`}>← Kembali</button>
+                        <button onClick={onBack} className={`absolute left-0 top-0 text-sm font-bold px-2.5 py-1 rounded-lg ${hasCustomBg ? 'bg-slate-900/80 text-sky-300 border border-slate-700' : 'bg-stone-200 text-sky-700'}`}>← Kembali</button>
                         <h1 className={`text-4xl font-bold font-poppins ${textColor}`}>Setup Level Up</h1>
                         <p className={subTextColor}>Taklukkan 9 Tingkat Tantangan Berbasis AI!</p>
                     </div>
@@ -637,26 +637,30 @@ Format JSON:
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-bold text-sky-600 mb-0.5">Soal / Tantangan:</label>
+                                                <label className="block text-[10px] font-bold text-sky-600 mb-0.5">
+                                                    {activityType === 'psychomotor' ? '🤸 Tantangan Praktik Psikomotor:' : 'Soal / Tantangan:'}
+                                                </label>
                                                 <textarea
                                                     value={q.question}
                                                     onChange={(e) => handleUpdateQuestion(levelNum, qIdx, 'question', e.target.value)}
                                                     className={`w-full p-2 text-xs rounded border resize-none focus:ring-1 focus:ring-orange-500 ${hasCustomBg ? 'bg-slate-950 text-white border-slate-800' : 'bg-white text-slate-800 border-slate-300'}`}
                                                     rows={2}
-                                                    placeholder="Masukkan pertanyaan..."
+                                                    placeholder={activityType === 'psychomotor' ? "Masukkan instruksi praktik/peragaan..." : "Masukkan pertanyaan..."}
                                                 />
                                             </div>
 
-                                            <div>
-                                                <label className="block text-[10px] font-bold text-emerald-600 mb-0.5">🔑 Kunci Jawaban (Acuan Koreksi AI):</label>
-                                                <textarea
-                                                    value={q.answerKey}
-                                                    onChange={(e) => handleUpdateQuestion(levelNum, qIdx, 'answerKey', e.target.value)}
-                                                    className={`w-full p-2 text-xs rounded border resize-none focus:ring-1 focus:ring-emerald-500 ${hasCustomBg ? 'bg-slate-950 text-emerald-300 border-slate-800' : 'bg-emerald-50/60 text-emerald-900 border-emerald-300'}`}
-                                                    rows={2}
-                                                    placeholder="Masukkan kunci jawaban acuan AI..."
-                                                />
-                                            </div>
+                                            {activityType === 'cognitive' && (
+                                                <div>
+                                                    <label className="block text-[10px] font-bold text-emerald-600 mb-0.5">🔑 Kunci Jawaban (Acuan Koreksi AI):</label>
+                                                    <textarea
+                                                        value={q.answerKey}
+                                                        onChange={(e) => handleUpdateQuestion(levelNum, qIdx, 'answerKey', e.target.value)}
+                                                        className={`w-full p-2 text-xs rounded border resize-none focus:ring-1 focus:ring-emerald-500 ${hasCustomBg ? 'bg-slate-950 text-emerald-300 border-slate-800' : 'bg-emerald-50/60 text-emerald-900 border-emerald-300'}`}
+                                                        rows={2}
+                                                        placeholder="Masukkan kunci jawaban acuan AI..."
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -710,11 +714,13 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
     const [winner, setWinner] = useState<Player | null>(null);
     const [characterStars, setCharacterStars] = useState<number>(0);
     const [customAwards, setCustomAwards] = useState<string[]>([]);
+    const [activityType, setActivityType] = useState<ActivityType>('cognitive');
 
     const handleStart = (newPlayers: Player[], newLevels: LevelContent, type: ActivityType, awards: string[]) => {
         setPlayers(newPlayers);
         setLevels(newLevels);
         setCustomAwards(awards);
+        setActivityType(type);
         setStage(GameStage.Playing);
     };
 
@@ -1033,77 +1039,83 @@ Output HARUS JSON persis:
                         {/* SHUFFLED QUESTION CARD */}
                         <div className="bg-gradient-to-b from-yellow-50 to-amber-50/80 p-5 rounded-2xl border-2 border-yellow-300 mb-4 shadow-inner text-center">
                             <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                                <Sparkles size={13} className="text-amber-500" /> Kartu Soal Acak
+                                <Sparkles size={13} className="text-amber-500" />
+                                {activityType === 'psychomotor' ? 'Aktivitas Praktik / Peragaan Psikomotor' : 'Kartu Soal Acak'}
                             </div>
                             <p className="text-lg sm:text-xl font-bold text-slate-800 whitespace-pre-wrap leading-snug">
                                 {activeQuestion.question}
                             </p>
                         </div>
 
-                        {/* TEACHER PEEK ANSWER KEY TOGGLE */}
-                        <div className="mb-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowAnswerKey(!showAnswerKey)}
-                                className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg border border-sky-200 transition-colors"
-                            >
-                                {showAnswerKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                                {showAnswerKey ? "Sembunyikan Kunci Jawaban" : "👁️ Intip Kunci Jawaban (Khusus Guru)"}
-                            </button>
-                            
-                            {showAnswerKey && (
-                                <div className="mt-2 p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left text-xs font-medium text-emerald-950 animate-fadeIn">
-                                    <span className="font-bold text-emerald-800 block mb-0.5">🔑 Kunci Jawaban Acuan:</span>
-                                    {activeQuestion.answerKey}
+                        {/* COGNITIVE ONLY: TEACHER PEEK ANSWER KEY TOGGLE & STUDENT ANSWER INPUT */}
+                        {activityType === 'cognitive' && (
+                            <>
+                                {/* TEACHER PEEK ANSWER KEY TOGGLE */}
+                                <div className="mb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAnswerKey(!showAnswerKey)}
+                                        className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg border border-sky-200 transition-colors"
+                                    >
+                                        {showAnswerKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                                        {showAnswerKey ? "Sembunyikan Kunci Jawaban" : "👁️ Intip Kunci Jawaban (Khusus Guru)"}
+                                    </button>
+                                    
+                                    {showAnswerKey && (
+                                        <div className="mt-2 p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left text-xs font-medium text-emerald-950 animate-fadeIn">
+                                            <span className="font-bold text-emerald-800 block mb-0.5">🔑 Kunci Jawaban Acuan:</span>
+                                            {activeQuestion.answerKey}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        {/* STUDENT ANSWER INPUT */}
-                        <div className="mb-4 text-left">
-                            <label className="block text-xs font-extrabold text-slate-700 mb-1">
-                                ✍️ Ketik Jawaban / Hasil Diskusi Kelompok:
-                            </label>
-                            <textarea
-                                value={studentAnswer}
-                                onChange={(e) => setStudentAnswer(e.target.value)}
-                                placeholder="Ketik jawaban siswa di sini untuk dikoreksi AI..."
-                                rows={3}
-                                className="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-slate-800 font-medium text-sm resize-none"
-                            />
-                            
-                            <button
-                                type="button"
-                                onClick={handleEvaluateAnswerWithAI}
-                                disabled={isEvaluating || !studentAnswer.trim()}
-                                className="mt-2 w-full bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 text-sm"
-                            >
-                                <Bot className={isEvaluating ? "animate-spin text-amber-300" : "text-amber-300"} size={18} />
-                                {isEvaluating ? "AI Sedang Mengevaluasi Logika Jawaban..." : "🤖 Koreksi & Evaluasi Jawaban dengan AI"}
-                            </button>
-                        </div>
+                                {/* STUDENT ANSWER INPUT */}
+                                <div className="mb-4 text-left">
+                                    <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                                        ✍️ Ketik Jawaban / Hasil Diskusi Kelompok:
+                                    </label>
+                                    <textarea
+                                        value={studentAnswer}
+                                        onChange={(e) => setStudentAnswer(e.target.value)}
+                                        placeholder="Ketik jawaban siswa di sini untuk dikoreksi AI..."
+                                        rows={3}
+                                        className="w-full p-3 rounded-xl border-2 border-slate-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-slate-800 font-medium text-sm resize-none"
+                                    />
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={handleEvaluateAnswerWithAI}
+                                        disabled={isEvaluating || !studentAnswer.trim()}
+                                        className="mt-2 w-full bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 text-sm"
+                                    >
+                                        <Bot className={isEvaluating ? "animate-spin text-amber-300" : "text-amber-300"} size={18} />
+                                        {isEvaluating ? "AI Sedang Mengevaluasi Logika Jawaban..." : "🤖 Koreksi & Evaluasi Jawaban dengan AI"}
+                                    </button>
+                                </div>
 
-                        {/* AI EVALUATION RESULT BANNER */}
-                        {aiEvaluation && (
-                            <div className={`p-4 rounded-xl border-2 mb-4 text-left animate-fadeIn ${
-                                aiEvaluation.passed 
-                                    ? 'bg-emerald-50 border-emerald-400 text-emerald-950' 
-                                    : 'bg-amber-50 border-amber-400 text-amber-950'
-                            }`}>
-                                <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-2 font-black text-sm sm:text-base">
-                                        {aiEvaluation.passed 
-                                            ? <CheckCircle2 className="text-emerald-600 flex-shrink-0" size={20} />
-                                            : <XCircle className="text-amber-600 flex-shrink-0" size={20} />
-                                        }
-                                        <span>{aiEvaluation.passed ? "🎉 AI: LULUS! Logika Jawaban Benar" : "⚠️ AI: BELUM LULUS (Perlu Diperbaiki)"}</span>
+                                {/* AI EVALUATION RESULT BANNER */}
+                                {aiEvaluation && (
+                                    <div className={`p-4 rounded-xl border-2 mb-4 text-left animate-fadeIn ${
+                                        aiEvaluation.passed 
+                                            ? 'bg-emerald-50 border-emerald-400 text-emerald-950' 
+                                            : 'bg-amber-50 border-amber-400 text-amber-950'
+                                    }`}>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <div className="flex items-center gap-2 font-black text-sm sm:text-base">
+                                                {aiEvaluation.passed 
+                                                    ? <CheckCircle2 className="text-emerald-600 flex-shrink-0" size={20} />
+                                                    : <XCircle className="text-amber-600 flex-shrink-0" size={20} />
+                                                }
+                                                <span>{aiEvaluation.passed ? "🎉 AI: LULUS! Logika Jawaban Benar" : "⚠️ AI: BELUM LULUS (Perlu Diperbaiki)"}</span>
+                                            </div>
+                                            <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${aiEvaluation.passed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'}`}>
+                                                Skor: {aiEvaluation.score}/100
+                                            </span>
+                                        </div>
+                                        <p className="text-xs font-medium leading-relaxed mt-1 opacity-95">{aiEvaluation.feedback}</p>
                                     </div>
-                                    <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${aiEvaluation.passed ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'}`}>
-                                        Skor: {aiEvaluation.score}/100
-                                    </span>
-                                </div>
-                                <p className="text-xs font-medium leading-relaxed mt-1 opacity-95">{aiEvaluation.feedback}</p>
-                            </div>
+                                )}
+                            </>
                         )}
                         
                         {/* CHARACTER RATING SECTION */}
