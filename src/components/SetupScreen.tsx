@@ -237,6 +237,12 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ onStartGame, visualSet
       alert("Harap isi Mata Pelajaran, Materi, dan Kelas terlebih dahulu.");
       return;
     }
+
+    if (!navigator.onLine) {
+      alert("⚡ Mode Offline: Fitur pembuatan soal otomatis oleh AI memerlukan koneksi internet. Anda dapat menggunakan Bank Soal tersimpan, daftar soal bawaan, atau mengetikkan soal secara manual.");
+      return;
+    }
+
     setIsGeneratingActivities(true);
     try {
         let prompt;
