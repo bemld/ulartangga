@@ -175,7 +175,7 @@ const LevelUpSetup: React.FC<LevelUpSetupProps> = ({ onStartGame, visualSettings
                 ? "Pertanyaan Kuis/Soal (Kognitif)" 
                 : "Tantangan Fisik/Praktik (Psikomotor)";
 
-            const qCount = Math.max(playerNames.length, 3);
+            const qCount = Math.max(playerNames.length, 5);
 
             const prompt = `Anda adalah desainer game edukasi bertingkat interaktif.
 Buatlah 9 level ${promptContext} untuk permainan "Level Up".
@@ -718,23 +718,26 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
         setStage(GameStage.Playing);
     };
 
-    const handleGroupClick = (index: number) => {
+    const handleGroupClick = (index: number, e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         const player = players[index];
-        if (player.position > 9) return;
+        if (!player || player.position > 9) return;
         
-        setActiveGroupIndex(index);
         const currentLevelTask = levels[player.position];
-        setModalTask(currentLevelTask);
-
-        // Pick / Shuffle a question item from questions array
         const qPool = currentLevelTask?.questions && currentLevelTask.questions.length > 0
             ? currentLevelTask.questions
             : [{ id: 'q_legacy', question: currentLevelTask?.content || 'Tantangan Level', answerKey: 'Sesuai analisis guru' }];
         
+        // Pick a random card from pool
         const randomCard = qPool[Math.floor(Math.random() * qPool.length)];
-        setActiveQuestion(randomCard);
 
-        // Reset modal fields
+        // Atomic state updates to prevent glitching/flashing
+        setActiveGroupIndex(index);
+        setModalTask(currentLevelTask || { level: player.position, difficulty: 'Normal' });
+        setActiveQuestion(randomCard);
         setStudentAnswer('');
         setShowAnswerKey(false);
         setAiEvaluation(null);
@@ -747,10 +750,29 @@ export const LevelUpGame: React.FC<LevelUpGameProps> = ({ visualSettings, onBack
             ? modalTask.questions
             : [{ id: 'q_legacy', question: modalTask.content || 'Tantangan Level', answerKey: 'Sesuai analisis guru' }];
         
-        const nextCard = qPool[Math.floor(Math.random() * qPool.length)];
+        if (qPool.length <= 1) {
+            alert("Hanya ada 1 kartu soal pada level ini. Anda dapat menambah kartu soal di menu Review Soal.");
+            return;
+        }
+
+        // Pick a different card than current activeQuestion
+        const otherCards = qPool.filter(q => q.id !== activeQuestion?.id);
+        const nextCard = otherCards[Math.floor(Math.random() * otherCards.length)] || qPool[0];
+
         setActiveQuestion(nextCard);
         setStudentAnswer('');
+        setShowAnswerKey(false);
         setAiEvaluation(null);
+    };
+
+    const handleCloseModal = () => {
+        setModalTask(null);
+        setActiveQuestion(null);
+        setActiveGroupIndex(null);
+        setStudentAnswer('');
+        setShowAnswerKey(false);
+        setAiEvaluation(null);
+        setCharacterStars(0);
     };
 
     const handleEvaluateAnswerWithAI = async () => {
@@ -939,7 +961,8 @@ Output HARUS JSON persis:
                             return (
                                 <button 
                                     key={p.id}
-                                    onClick={() => handleGroupClick(idx)}
+                                    type="button"
+                                    onClick={(e) => handleGroupClick(idx, e)}
                                     disabled={!!winner}
                                     className={`w-full flex items-center p-3 rounded-lg border-2 transition-transform hover:scale-105 ${isFinished ? 'bg-emerald-500 border-emerald-600' : 'bg-slate-700/50 border-transparent hover:border-yellow-400'}`}
                                 >
@@ -966,27 +989,43 @@ Output HARUS JSON persis:
 
             {/* TASK MODAL WITH SHUFFLED CARD & AI CORRECTION */}
             {modalTask && activeGroupIndex !== null && activeQuestion && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white w-full max-w-2xl rounded-2xl p-6 sm:p-8 border-4 border-yellow-400 relative animate-content-fade my-auto shadow-2xl">
+                <div 
+                    className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto"
+                    onClick={handleCloseModal}
+                >
+                    <div 
+                        className="bg-white w-full max-w-2xl rounded-2xl p-6 sm:p-8 border-4 border-yellow-400 relative my-auto shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Close button */}
+                        <button 
+                            type="button"
+                            onClick={handleCloseModal}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 font-bold text-lg w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                            title="Tutup Modal"
+                        >
+                            ✕
+                        </button>
+
                         <div className="absolute -top-5 -left-5 w-14 h-14 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-lg text-2xl font-bold text-yellow-900">
                             {modalTask.level}
                         </div>
                         
-                        <div className="text-center mb-4">
+                        <div className="text-center mb-4 pr-6">
                             <h2 className="text-2xl sm:text-3xl font-bold font-caveat text-slate-800">
-                                Tantangan {players[activeGroupIndex].name}
+                                Tantangan {players[activeGroupIndex].name} (Level {modalTask.level})
                             </h2>
-                            <div className="flex items-center justify-center gap-2 mt-1">
+                            <div className="flex items-center justify-center gap-2 mt-1 flex-wrap">
                                 <span className="bg-slate-200 text-slate-700 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
                                     Tingkat: {modalTask.difficulty}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={handleReshuffleQuestion}
-                                    className="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors border border-amber-300"
+                                    className="bg-amber-100 hover:bg-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors border border-amber-300 shadow-sm"
                                     title="Kocok ulang kartu soal lain untuk level ini"
                                 >
-                                    <RefreshCw size={12} /> Kocok Soal Lain
+                                    <RefreshCw size={12} /> Kocok Soal Lain 🎲
                                 </button>
                             </div>
                         </div>
