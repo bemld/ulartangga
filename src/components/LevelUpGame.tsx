@@ -341,7 +341,7 @@ Format JSON:
             <div className="min-h-screen flex items-center justify-center p-4 py-8">
                  <div className={`w-full max-w-4xl rounded-2xl shadow-2xl p-6 sm:p-8 border-2 space-y-6 ${hasCustomBg ? 'bg-slate-950/95 backdrop-blur-md border-slate-700/90 text-white shadow-black/80' : 'bg-stone-50 border-stone-200'}`} style={visualSettings.containerBackground ? { backgroundImage: `url(${visualSettings.containerBackground})`, backgroundSize: 'cover' } : {}}>
                     
-                    <div className="relative text-center">
+                    <div className={`relative text-center p-5 rounded-2xl border ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : ''}`}>
                         <button 
                             type="button"
                             onClick={(e) => {
@@ -349,7 +349,7 @@ Format JSON:
                                 e.stopPropagation();
                                 onBack();
                             }} 
-                            className={`absolute left-0 top-0 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
+                            className={`absolute left-4 top-4 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
                                 hasCustomBg 
                                     ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-2 border-amber-300 shadow-black/50' 
                                     : 'bg-sky-700 hover:bg-sky-800 text-white border-2 border-sky-600 shadow-sky-900/20'
@@ -357,31 +357,31 @@ Format JSON:
                         >
                             ← Kembali ke Menu
                         </button>
-                        <h1 className={`text-4xl font-extrabold font-poppins ${textColor}`}>Setup Level Up</h1>
+                        <h1 className={`text-4xl font-extrabold font-poppins ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>Setup Level Up</h1>
                         <p className={`mt-1 text-sm font-bold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Taklukkan 9 Tingkat Tantangan Berbasis AI!</p>
                     </div>
     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <h3 className={`text-xl font-bold border-b pb-2 ${textColor}`}>1. Konteks Pembelajaran</h3>
+                        <div className={`p-5 rounded-2xl border space-y-4 ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : 'bg-stone-100/60 border-stone-200'}`}>
+                            <h3 className={`text-xl font-bold border-b pb-2 ${hasCustomBg ? 'text-amber-300 border-slate-700' : 'text-slate-800 border-stone-300'}`}>1. Konteks Pembelajaran</h3>
                             <input type="text" placeholder="Mata Pelajaran (Misal: IPA)" value={subject} onChange={e => setSubject(e.target.value)} className={inputClass} />
                             <input type="text" placeholder="Fase / Kelas (Misal: Kelas 4)" value={grade} onChange={e => setGrade(e.target.value)} className={inputClass} />
                             <textarea rows={3} placeholder="Tujuan Pembelajaran Akhir (Untuk Level 9)" value={objective} onChange={e => setObjective(e.target.value)} className={inputClass} />
                             
-                            <div className="flex gap-4 pt-2">
-                                 <label className={`flex items-center gap-2 cursor-pointer ${textColor}`}>
-                                    <input type="radio" checked={activityType === 'cognitive'} onChange={() => setActivityType('cognitive')} className="w-5 h-5 text-orange-600" />
-                                    <span>Kognitif (Soal)</span>
+                            <div className="flex gap-3 pt-2 flex-wrap">
+                                 <label className={`flex items-center gap-2 cursor-pointer px-3.5 py-2 rounded-xl border transition-all ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-stone-300 text-slate-800'}`}>
+                                    <input type="radio" checked={activityType === 'cognitive'} onChange={() => setActivityType('cognitive')} className="w-4 h-4 text-orange-600" />
+                                    <span className="font-bold text-sm">Kognitif (Soal)</span>
                                 </label>
-                                <label className={`flex items-center gap-2 cursor-pointer ${textColor}`}>
-                                    <input type="radio" checked={activityType === 'psychomotor'} onChange={() => setActivityType('psychomotor')} className="w-5 h-5 text-orange-600" />
-                                    <span>Psikomotor (Gerak)</span>
+                                <label className={`flex items-center gap-2 cursor-pointer px-3.5 py-2 rounded-xl border transition-all ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-stone-300 text-slate-800'}`}>
+                                    <input type="radio" checked={activityType === 'psychomotor'} onChange={() => setActivityType('psychomotor')} className="w-4 h-4 text-orange-600" />
+                                    <span className="font-bold text-sm">Psikomotor (Gerak)</span>
                                 </label>
                             </div>
 
                             {/* Saved Presets Load Panel */}
                             {savedActivities.length > 0 && (
-                                <div className={`pt-4 border-t ${hasCustomBg ? 'border-white/10' : 'border-stone-200'} space-y-2`}>
+                                <div className={`pt-4 border-t ${hasCustomBg ? 'border-slate-700' : 'border-stone-200'} space-y-2`}>
                                     <label className={`text-sm font-bold flex items-center gap-2 ${hasCustomBg ? 'text-sky-300' : 'text-sky-750'}`}>
                                         <FolderOpen size={16} /> Gunakan Preset Tersimpan (Offline):
                                     </label>
@@ -390,12 +390,13 @@ Format JSON:
                                             <div 
                                                 key={p.id}
                                                 onClick={() => handleLoadPreset(p.id)}
-                                                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800/40 border-slate-600 text-white hover:bg-slate-700/50' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
+                                                className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white hover:bg-slate-700' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
                                             >
-                                                <span className="truncate max-w-[155px]">{p.title} <span className="text-[10px] opacity-60">({p.subject})</span></span>
+                                                <span className="truncate max-w-[155px]">{p.title} <span className="text-[10px] opacity-75">({p.subject})</span></span>
                                                 <button 
+                                                    type="button"
                                                     onClick={(e) => handleDeletePreset(p.id, e)}
-                                                    className="text-red-400 hover:text-red-650 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
+                                                    className="text-red-400 hover:text-red-500 opacity-80 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
                                                     title="Hapus Preset"
                                                 >
                                                     <Trash2 size={13} />
@@ -407,30 +408,32 @@ Format JSON:
                             )}
                         </div>
     
-                        <div className="space-y-4">
-                            <h3 className={`text-xl font-bold border-b pb-2 ${textColor}`}>2. Kelompok Peserta</h3>
+                        <div className={`p-5 rounded-2xl border space-y-4 ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : 'bg-stone-100/60 border-stone-200'}`}>
+                            <h3 className={`text-xl font-bold border-b pb-2 ${hasCustomBg ? 'text-amber-300 border-slate-700' : 'text-slate-800 border-stone-300'}`}>2. Kelompok Peserta</h3>
                             
-                             <div className="flex gap-2 mb-2 bg-slate-100 p-1 rounded-lg w-fit">
+                            <div className="flex gap-2 mb-2 bg-slate-800/80 p-1 rounded-xl w-fit border border-slate-700">
                                 <button 
+                                    type="button"
                                     onClick={() => setInputMode('manual')}
-                                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'manual' ? 'bg-white shadow text-orange-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3.5 py-1 text-sm font-bold rounded-lg transition-colors ${inputMode === 'manual' ? 'bg-orange-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
                                 >
                                     Manual
                                 </button>
                                 <button 
+                                    type="button"
                                     onClick={() => setInputMode('class')}
-                                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'class' ? 'bg-white shadow text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-3.5 py-1 text-sm font-bold rounded-lg transition-colors ${inputMode === 'class' ? 'bg-emerald-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
                                 >
                                     Dari Kelas
                                 </button>
                             </div>
 
                             {inputMode === 'class' ? (
-                                <div className={`p-4 rounded-lg border-2 border-emerald-400/50 ${hasCustomBg ? 'bg-emerald-900/20' : 'bg-emerald-50'}`}>
+                                <div className={`p-4 rounded-xl border-2 border-emerald-400/50 ${hasCustomBg ? 'bg-emerald-950/40' : 'bg-emerald-50'}`}>
                                     <select 
                                         value={selectedClassId} 
                                         onChange={e => setSelectedClassId(e.target.value)}
-                                        className={`w-full p-2 rounded mb-3 text-sm ${hasCustomBg ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 border'}`}
+                                        className={`w-full p-2.5 rounded-lg mb-3 text-sm font-bold ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600 border' : 'bg-white border-slate-300 border'}`}
                                     >
                                         <option value="">-- Pilih Kelas --</option>
                                         {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.students.length} Siswa)</option>)}
@@ -443,20 +446,20 @@ Format JSON:
                                         placeholder="Jumlah Kelompok"
                                         value={groupCount}
                                         onChange={e => setGroupCount(parseInt(e.target.value))}
-                                        className={`w-full p-2 rounded mb-3 text-sm ${hasCustomBg ? 'bg-slate-800 text-white' : 'bg-white border-slate-300 border'}`}
+                                        className={`w-full p-2.5 rounded-lg mb-3 text-sm font-bold ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600 border' : 'bg-white border-slate-300 border'}`}
                                     />
                                     
-                                    <button onClick={handleAutoGroup} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded flex items-center justify-center gap-2 text-sm">
+                                    <button type="button" onClick={handleAutoGroup} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm shadow">
                                         <Shuffle size={16} />
                                         Buat Kelompok
                                     </button>
                                 </div>
                             ) : (
-                                <div className="max-h-72 overflow-y-auto space-y-2 pr-2">
+                                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
                                     {playerNames.map((name, idx) => {
                                         const currentStyle = pawnStyles[idx] || (idx % 3 === 0 ? 'car' : idx % 3 === 1 ? 'kid' : 'classic');
                                         return (
-                                            <div key={idx} className={`p-3 rounded-xl border transition-colors ${hasCustomBg ? 'bg-black/30 border-white/10 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
+                                            <div key={idx} className={`p-3 rounded-xl border transition-colors ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className={`w-4 h-4 rounded-full flex-shrink-0 ${PLAYER_COLORS[idx % PLAYER_COLORS.length]}`}></span>
                                                     <input
@@ -467,12 +470,12 @@ Format JSON:
                                                             newNames[idx] = e.target.value;
                                                             setPlayerNames(newNames);
                                                         }}
-                                                        className={`flex-grow p-1.5 py-1 text-sm rounded font-medium focus:ring-1 focus:ring-orange-500 border ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-stone-50 border-stone-200 text-slate-800'}`}
+                                                        className={`flex-grow p-1.5 py-1 text-sm rounded font-medium focus:ring-1 focus:ring-orange-500 border ${hasCustomBg ? 'bg-slate-900 border-slate-600 text-white' : 'bg-stone-50 border-stone-200 text-slate-800'}`}
                                                         placeholder="Nama Kelompok"
                                                     />
-                                                    <button onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-650 p-1 font-bold text-xs" title="Hapus">✕</button>
+                                                    <button type="button" onClick={() => setPlayerNames(playerNames.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-500 p-1 font-bold text-xs" title="Hapus">✕</button>
                                                 </div>
-                                                <div className="flex items-center justify-between pt-1 border-t border-slate-400/20">
+                                                <div className="flex items-center justify-between pt-1 border-t border-slate-700/50">
                                                     <span className={`text-[11px] font-bold ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Model Pion:</span>
                                                     <div className="flex gap-1.5">
                                                         {[
@@ -487,7 +490,7 @@ Format JSON:
                                                                 className={`text-[10px] px-2 py-1 rounded-md transition-all font-bold ${
                                                                     currentStyle === item.value 
                                                                         ? 'bg-orange-600 text-white scale-105 shadow' 
-                                                                        : (hasCustomBg ? 'bg-white/10 text-slate-300 hover:bg-white/20' : 'bg-stone-100 text-slate-600 hover:bg-stone-200')
+                                                                        : (hasCustomBg ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-stone-100 text-slate-600 hover:bg-stone-200')
                                                                 }`}
                                                             >
                                                                 {item.label}
@@ -499,22 +502,22 @@ Format JSON:
                                         );
                                     })}
                                      {playerNames.length < 8 && (
-                                        <button onClick={handleAddPlayer} className={`w-full py-2 border-2 border-dashed rounded font-bold ${hasCustomBg ? 'border-slate-400 text-slate-300 hover:bg-white/10' : 'border-slate-400 text-slate-500 hover:bg-slate-100'}`}>+ Tambah Kelompok</button>
+                                        <button type="button" onClick={handleAddPlayer} className={`w-full py-2 border-2 border-dashed rounded-xl font-bold ${hasCustomBg ? 'border-amber-400/80 text-amber-300 bg-slate-800 hover:bg-slate-700' : 'border-slate-400 text-slate-600 hover:bg-slate-100'}`}>+ Tambah Kelompok</button>
                                     )}
                                 </div>
                             )}
 
                             {/* Custom Awards list & editor */}
-                            <div className={`p-4 rounded-xl border mt-4 ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
-                                <h4 className={`text-sm font-bold flex items-center gap-1.5 ${textColor}`}>
-                                    <Award className="text-orange-500" size={16} /> Regu Apresiasi & Karakter
+                            <div className={`p-4 rounded-xl border mt-4 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
+                                <h4 className={`text-sm font-bold flex items-center gap-1.5 ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>
+                                    <Award className="text-amber-400" size={16} /> Regu Apresiasi & Karakter
                                 </h4>
-                                <p className={`text-[11px] mb-2 ${subTextColor}`}>Guru dapat mengcustom kategori penghargaan di akhir game.</p>
+                                <p className={`text-[11px] mb-2 ${hasCustomBg ? 'text-slate-300' : 'text-slate-600'}`}>Guru dapat mengcustom kategori penghargaan di akhir game.</p>
                                 
                                 <div className="space-y-1.5 max-h-32 overflow-y-auto mb-2.5 pr-1 font-sans">
                                     {customAwards.map((award, idx) => (
                                         <div key={idx} className="flex items-center gap-1.5">
-                                            <Award size={12} className="text-amber-500 flex-shrink-0" />
+                                            <Award size={12} className="text-amber-400 flex-shrink-0" />
                                             <input
                                                 type="text"
                                                 value={award}
@@ -523,11 +526,12 @@ Format JSON:
                                                     updated[idx] = e.target.value;
                                                     setCustomAwards(updated);
                                                 }}
-                                                className={`flex-grow p-1 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                                                className={`flex-grow p-1 text-xs rounded border ${hasCustomBg ? 'bg-slate-900 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
                                             />
                                             <button
+                                                type="button"
                                                 onClick={() => setCustomAwards(customAwards.filter((_, i) => i !== idx))}
-                                                className="text-red-500 hover:text-red-700 p-0.5 text-xs font-bold"
+                                                className="text-red-400 hover:text-red-500 p-0.5 text-xs font-bold"
                                             >
                                                 ✕
                                             </button>
@@ -540,7 +544,7 @@ Format JSON:
                                         placeholder="Kategori baru..."
                                         value={newAwardInput}
                                         onChange={(e) => setNewAwardInput(e.target.value)}
-                                        className={`flex-grow p-1 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                                        className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-900 text-white border-slate-600 placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
@@ -552,15 +556,16 @@ Format JSON:
                                         }}
                                     />
                                     <button
+                                        type="button"
                                         onClick={() => {
                                             if (newAwardInput.trim()) {
                                                 setCustomAwards([...customAwards, newAwardInput.trim()]);
                                                 setNewAwardInput('');
                                             }
                                         }}
-                                        className="bg-orange-600 text-white px-2 py-1 rounded text-xs font-bold hover:bg-orange-700 flex items-center gap-1 flex-shrink-0"
+                                        className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-700 flex items-center gap-1 flex-shrink-0 shadow cursor-pointer"
                                     >
-                                        <Plus size={11} /> Tambah
+                                        <Plus size={12} /> Tambah
                                     </button>
                                 </div>
                             </div>

@@ -355,7 +355,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
         className={`w-full max-w-5xl rounded-2xl shadow-2xl p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'bg-slate-950/95 backdrop-blur-md border-slate-700/90 text-white shadow-black/80' : 'border-stone-200 shadow-black/30 ' + defaultClasses}`}
         style={containerStyle}
       >
-        <div className="text-center relative">
+        <div className={`text-center relative p-5 sm:p-6 rounded-2xl border ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : ''}`}>
           <button
             type="button"
             onClick={(e) => {
@@ -363,7 +363,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
               e.stopPropagation();
               onBack();
             }}
-            className={`absolute top-0 left-0 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
+            className={`absolute top-4 left-4 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
               hasCustomBg 
                 ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-2 border-amber-300 shadow-black/50' 
                 : 'bg-sky-700 hover:bg-sky-800 text-white border-2 border-sky-600 shadow-sky-900/20'
@@ -466,8 +466,8 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                 const answerKeyVal = typeof act === 'object' ? (act?.answerKey || '') : '';
 
                 return (
-                  <div key={squareNum} className={`p-2.5 rounded-lg border ${hasCustomBg ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-stone-200'}`}>
-                    <label className={`font-bold text-xs block mb-1 ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>
+                  <div key={squareNum} className={`p-2.5 rounded-lg border ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white shadow-sm' : 'bg-white border-stone-200'}`}>
+                    <label className={`font-bold text-xs block mb-1 ${hasCustomBg ? 'text-amber-300' : 'text-slate-700'}`}>
                       Kotak {squareNum} {activityType === 'cognitive' ? '🧠 (Kognitif)' : '🤸 (Psikomotor)'}:
                     </label>
                     <textarea
@@ -565,11 +565,11 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                   </div>
               ) : (
                 <>
-                  <h3 className={`text-xl font-medium mb-3 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Kelompok & Karakter 3D</h3>
+                  <h3 className={`text-xl font-bold mb-3 ${hasCustomBg ? 'text-amber-300' : 'text-slate-700'}`}>Atur Kelompok & Karakter 3D</h3>
                   {playerNames.map((name, index) => {
                     const currentStyle = pawnStyles[index] || (index % 3 === 0 ? 'car' : index % 3 === 1 ? 'kid' : 'classic');
                     return (
-                      <div key={index} className={`p-3 rounded-xl border mb-3 transition-colors ${hasCustomBg ? 'bg-black/30 border-white/10 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
+                      <div key={index} className={`p-3 rounded-xl border mb-3 transition-colors ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-stone-200 shadow-sm'}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <span className={`w-4 h-4 rounded-full flex-shrink-0 ${PLAYER_COLORS[index % PLAYER_COLORS.length]}`}></span>
                           <input
@@ -637,19 +637,19 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
             </div>
 
             {/* Kategori Apresiasi Guru */}
-            <div className={`p-4 rounded-xl border mt-6 ${hasCustomBg ? 'bg-black/30 border-white/20' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
-              <h3 className={`text-base font-bold mb-1 font-poppins flex items-center gap-2 ${hasCustomBg ? 'text-white' : 'text-slate-850'}`}>
-                <Award className="text-orange-500" size={18} />
+            <div className={`p-4 rounded-xl border mt-6 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-orange-50/50 border-orange-200 shadow-sm'}`}>
+              <h3 className={`text-base font-bold mb-1 font-poppins flex items-center gap-2 ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>
+                <Award className="text-amber-400" size={18} />
                 4. Kategori Apresiasi & Karakter Kelompok
               </h3>
-              <p className={`text-xs mb-3 ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>
+              <p className={`text-xs mb-3 ${hasCustomBg ? 'text-slate-300' : 'text-slate-600'}`}>
                 Guru dapat merancang kategori apresiasi yang akan dianugerahkan ke kelompok di akhir permainan.
               </p>
               
               <div className="space-y-2 max-h-48 overflow-y-auto mb-3 pr-1">
                 {customAwards.map((award, idx) => (
                   <div key={idx} className="flex items-center gap-2">
-                    <Award size={13} className="text-amber-500 flex-shrink-0" />
+                    <Award size={13} className="text-amber-400 flex-shrink-0" />
                     <input
                       type="text"
                       value={award}
@@ -658,11 +658,12 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                         updated[idx] = e.target.value;
                         setCustomAwards(updated);
                       }}
-                      className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
+                      className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-900 text-white border-slate-600' : 'bg-white border-slate-300 text-slate-800'}`}
                     />
                     <button
+                      type="button"
                       onClick={() => setCustomAwards(customAwards.filter((_, i) => i !== idx))}
-                      className="text-red-500 hover:text-red-700 p-1 text-sm font-semibold"
+                      className="text-red-400 hover:text-red-500 p-1 text-sm font-bold"
                       title="Hapus Kategori"
                     >
                       ✕
@@ -677,7 +678,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                   placeholder="Kategori baru... (e.g. Kelompok Ter-jujur)"
                   value={newAwardInput}
                   onChange={(e) => setNewAwardInput(e.target.value)}
-                  className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-800 text-white border-slate-600' : 'bg-white border-slate-300 border-orange-200'}`}
+                  className={`flex-grow p-1.5 text-xs rounded border ${hasCustomBg ? 'bg-slate-900 text-white border-slate-600 placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800 border-orange-200'}`}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
@@ -696,7 +697,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                       setNewAwardInput('');
                     }
                   }}
-                  className="bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-bold hover:bg-orange-700 flex items-center justify-center gap-1 flex-shrink-0"
+                  className="bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-orange-700 flex items-center justify-center gap-1 flex-shrink-0 shadow cursor-pointer"
                 >
                   <Plus size={13} /> Tambah
                 </button>
@@ -704,7 +705,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
 
               {/* Suggestions */}
               <div className="mt-3">
-                <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${hasCustomBg ? 'text-slate-400' : 'text-slate-500'}`}>Rekomendasi Cepat:</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${hasCustomBg ? 'text-slate-300' : 'text-slate-500'}`}>Rekomendasi Cepat:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {["Kelompok Paling Sportif", "Kelompok Paling Kompak", "Kelompok Paling Kreatif", "Kelompok Paling Aktif", "Kelompok Ter-Tertib", "Kelompok Ter-Jujur"].map(sug => {
                     const isAlreadyIncluded = customAwards.includes(sug);
@@ -714,7 +715,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                         type="button"
                         key={sug}
                         onClick={() => setCustomAwards([...customAwards, sug])}
-                        className={`text-[10px] px-2 py-1 rounded-full border transition-all ${hasCustomBg ? 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:scale-105'}`}
+                        className={`text-[10px] px-2 py-1 rounded-full border transition-all font-semibold ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-amber-200 hover:bg-slate-700' : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:scale-105'}`}
                       >
                         + {sug}
                       </button>
@@ -726,9 +727,9 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
           </div>
         </div>
         
-        <div className={`pt-6 border-t ${hasCustomBg ? 'border-white/20' : 'border-slate-200'}`}>
-          <button onClick={handleStart} className="w-full bg-emerald-600 text-white font-bold text-xl py-4 rounded-lg hover:bg-emerald-700 transition-transform transform hover:scale-105 shadow-lg">
-            Mulai Permainan
+        <div className={`pt-6 border-t ${hasCustomBg ? 'border-slate-700' : 'border-slate-200'}`}>
+          <button type="button" onClick={handleStart} className="w-full bg-emerald-600 text-white font-extrabold text-xl py-4 rounded-xl hover:bg-emerald-700 transition-transform transform hover:scale-[1.02] shadow-xl cursor-pointer">
+            🚀 Mulai Permainan Smart Play
           </button>
         </div>
       </div>
@@ -750,18 +751,18 @@ const SpecialSquareSetup: React.FC<SpecialSquareSetupProps> = ({ title, items, o
 
     return (
         <div>
-            <h3 className={`text-xl font-medium mb-2 ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>{title}</h3>
+            <h3 className={`text-xl font-bold mb-2 ${hasCustomBg ? 'text-amber-300' : 'text-slate-700'}`}>{title}</h3>
             {items.map((item, index) => (
-                <div key={index} className={`p-2 border rounded-lg mb-2 ${hasCustomBg ? 'bg-black/20 border-white/10' : 'bg-stone-100'}`}>
+                <div key={index} className={`p-2 border rounded-lg mb-2 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white' : 'bg-stone-100 border-stone-200'}`}>
                   <div className="flex items-center gap-2">
-                      <input type="number" value={item.start || ''} onChange={e => onChange(index, 'start', e.target.value)} className={`w-16 p-2 border rounded-md ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white' : 'bg-white'}`} placeholder="Dari" />
-                      <span>→</span>
-                      <input type="number" value={item.end || ''} onChange={e => onChange(index, 'end', e.target.value)} className={`w-16 p-2 border rounded-md ${hasCustomBg ? 'bg-slate-800/50 border-slate-500 text-white' : 'bg-white'}`} placeholder="Ke" />
-                      <button onClick={() => onRemove(index)} className="text-red-500 hover:text-red-700 p-1 ml-auto">✕</button>
+                      <input type="number" value={item.start || ''} onChange={e => onChange(index, 'start', e.target.value)} className={`w-16 p-1.5 border rounded-md text-xs font-bold ${hasCustomBg ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`} placeholder="Dari" />
+                      <span className={`font-bold ${hasCustomBg ? 'text-amber-300' : 'text-slate-600'}`}>→</span>
+                      <input type="number" value={item.end || ''} onChange={e => onChange(index, 'end', e.target.value)} className={`w-16 p-1.5 border rounded-md text-xs font-bold ${hasCustomBg ? 'bg-slate-900 border-slate-600 text-white placeholder-slate-400' : 'bg-white border-slate-300 text-slate-800'}`} placeholder="Ke" />
+                      <button type="button" onClick={() => onRemove(index)} className="text-red-400 hover:text-red-500 p-1 ml-auto font-bold text-xs" title="Hapus">✕</button>
                   </div>
                 </div>
             ))}
-            <button onClick={onAdd} className={`mt-1 w-full text-sm font-semibold border-2 border-dashed rounded-md py-1 transition-colors ${hasCustomBg ? 'text-slate-400 border-slate-500 hover:bg-black/20' : 'text-slate-600 border-slate-400 hover:bg-stone-200'}`}>
+            <button type="button" onClick={onAdd} className={`mt-1 w-full text-xs font-bold border-2 border-dashed rounded-xl py-2 transition-colors ${hasCustomBg ? 'text-amber-300 border-amber-400/60 bg-slate-800 hover:bg-slate-700' : 'text-slate-600 border-slate-400 hover:bg-stone-200'}`}>
               + Tambah {baseTitle}
             </button>
         </div>
