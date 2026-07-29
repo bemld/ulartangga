@@ -338,13 +338,27 @@ Format JSON:
     // --- RENDER STEP 1: INPUT ---
     if (step === 'input') {
         return (
-            <div className="min-h-screen flex items-center justify-center p-4">
-                 <div className={`w-full max-w-4xl rounded-2xl shadow-2xl p-8 border-2 space-y-6 ${hasCustomBg ? 'bg-slate-950/85 backdrop-blur-md border-slate-700/80 text-white shadow-black/60' : 'bg-stone-50 border-stone-200'}`} style={visualSettings.containerBackground ? { backgroundImage: `url(${visualSettings.containerBackground})`, backgroundSize: 'cover' } : {}}>
+            <div className="min-h-screen flex items-center justify-center p-4 py-8">
+                 <div className={`w-full max-w-4xl rounded-2xl shadow-2xl p-6 sm:p-8 border-2 space-y-6 ${hasCustomBg ? 'bg-slate-950/95 backdrop-blur-md border-slate-700/90 text-white shadow-black/80' : 'bg-stone-50 border-stone-200'}`} style={visualSettings.containerBackground ? { backgroundImage: `url(${visualSettings.containerBackground})`, backgroundSize: 'cover' } : {}}>
                     
                     <div className="relative text-center">
-                        <button onClick={onBack} className={`absolute left-0 top-0 text-sm font-bold px-2.5 py-1 rounded-lg ${hasCustomBg ? 'bg-slate-900/80 text-sky-300 border border-slate-700' : 'bg-stone-200 text-sky-700'}`}>← Kembali</button>
-                        <h1 className={`text-4xl font-bold font-poppins ${textColor}`}>Setup Level Up</h1>
-                        <p className={subTextColor}>Taklukkan 9 Tingkat Tantangan Berbasis AI!</p>
+                        <button 
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onBack();
+                            }} 
+                            className={`absolute left-0 top-0 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
+                                hasCustomBg 
+                                    ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-2 border-amber-300 shadow-black/50' 
+                                    : 'bg-sky-700 hover:bg-sky-800 text-white border-2 border-sky-600 shadow-sky-900/20'
+                            }`}
+                        >
+                            ← Kembali ke Menu
+                        </button>
+                        <h1 className={`text-4xl font-extrabold font-poppins ${textColor}`}>Setup Level Up</h1>
+                        <p className={`mt-1 text-sm font-bold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Taklukkan 9 Tingkat Tantangan Berbasis AI!</p>
                     </div>
     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -884,9 +898,32 @@ Output HARUS JSON persis:
     return (
         <div className="min-h-screen p-2 sm:p-4 flex flex-col items-center">
             {/* Header */}
-            <div className={`w-full max-w-7xl flex justify-between items-center mb-4 p-4 rounded-xl border-2 ${bgClass}`}>
-                <h1 className="text-2xl sm:text-3xl font-bold font-poppins">Level Up Adventure</h1>
-                <button onClick={onBackToMenu} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-bold text-sm">Keluar</button>
+            <div className="w-full max-w-7xl flex flex-wrap items-center justify-between bg-slate-900/90 backdrop-blur-md p-3 px-5 rounded-2xl border-2 border-slate-700/80 shadow-xl text-white gap-3 z-10 mb-4">
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (window.confirm('Apakah Anda yakin ingin kembali ke menu utama? Permainan saat ini akan berakhir.')) {
+                            onBackToMenu();
+                        }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white rounded-xl font-bold text-sm border border-slate-600 transition-all cursor-pointer shadow-md hover:scale-105 z-30"
+                >
+                    ← Kembali ke Menu Utama
+                </button>
+                <h1 className="text-xl sm:text-2xl font-extrabold font-poppins text-amber-300">Level Up Adventure</h1>
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (window.confirm('Apakah Anda yakin ingin mengulang permainan dari awal?')) {
+                            setStage(GameStage.Setup);
+                        }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-bold text-sm transition-all cursor-pointer shadow-md hover:scale-105"
+                >
+                    ⚙️ Ulangi Pengaturan
+                </button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6 w-full max-w-7xl flex-grow h-full">

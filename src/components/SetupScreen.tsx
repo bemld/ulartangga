@@ -352,7 +352,7 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 pb-20">
       <div 
-        className={`w-full max-w-5xl rounded-2xl shadow-2xl p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'bg-slate-950/85 backdrop-blur-md border-slate-700/80 text-white shadow-black/60' : 'border-stone-200 shadow-black/30 ' + defaultClasses}`}
+        className={`w-full max-w-5xl rounded-2xl shadow-2xl p-6 sm:p-8 space-y-8 border-2 ${hasCustomBg ? 'bg-slate-950/95 backdrop-blur-md border-slate-700/90 text-white shadow-black/80' : 'border-stone-200 shadow-black/30 ' + defaultClasses}`}
         style={containerStyle}
       >
         <div className="text-center relative">
@@ -363,47 +363,48 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
               e.stopPropagation();
               onBack();
             }}
-            className={`absolute top-0 left-0 z-30 flex items-center gap-1.5 text-sm font-extrabold transition-all px-3.5 py-1.5 rounded-xl shadow-md cursor-pointer hover:scale-105 ${
+            className={`absolute top-0 left-0 z-40 flex items-center gap-1.5 text-sm font-black transition-all px-4 py-2 rounded-xl shadow-lg cursor-pointer hover:scale-105 ${
               hasCustomBg 
-                ? 'bg-slate-900 text-amber-300 hover:text-white border-2 border-amber-400/80 shadow-black' 
-                : 'bg-white text-sky-800 hover:text-sky-950 border-2 border-sky-300 hover:border-sky-500'
+                ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 border-2 border-amber-300 shadow-black/50' 
+                : 'bg-sky-700 hover:bg-sky-800 text-white border-2 border-sky-600 shadow-sky-900/20'
             }`}
           >
             ← Kembali ke Menu
           </button>
-          <h1 className={`text-4xl sm:text-5xl font-bold font-poppins ${hasCustomBg ? 'text-amber-300 drop-shadow-md' : 'text-slate-800'}`}>Smart Play</h1>
-          <p className={`mt-2 text-lg font-medium ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Permainan Edukatif Anda</p>
+          <h1 className={`text-4xl sm:text-5xl font-extrabold font-poppins ${hasCustomBg ? 'text-amber-300 drop-shadow-md' : 'text-slate-800'}`}>Smart Play</h1>
+          <p className={`mt-2 text-lg font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-600'}`}>Atur Permainan Edukatif Anda</p>
         </div>
 
         {/* AI Activity Generation Section */}
-        <div className={`p-6 rounded-xl border ${hasCustomBg ? 'bg-slate-900/90 border-slate-700 shadow-inner' : 'bg-stone-100 border-stone-300'}`}>
-            <h2 className={`text-2xl font-bold mb-4 font-poppins ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>1. Tentukan Konteks Pembelajaran</h2>
+        <div className={`p-6 rounded-2xl border ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : 'bg-stone-100 border-stone-300'}`}>
+            <h2 className={`text-2xl font-extrabold mb-4 font-poppins ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>1. Tentukan Konteks Pembelajaran</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <input type="text" placeholder="Mata Pelajaran (e.g., Sejarah)" value={subject} onChange={e => setSubject(e.target.value)} className={inputClass}/>
                 <input type="text" placeholder="Materi Spesifik (e.g., Proklamasi)" value={topic} onChange={e => setTopic(e.target.value)} className={inputClass}/>
                 <input type="text" placeholder="Tingkat Kelas (e.g., Kelas 5 SD)" value={grade} onChange={e => setGrade(e.target.value)} className={inputClass}/>
             </div>
-             <div className="flex justify-center gap-6 my-4">
-                <label className={`flex items-center gap-2 cursor-pointer p-2 rounded-md ${hasCustomBg ? 'hover:bg-black/20' : 'hover:bg-stone-200'}`}>
+             <div className="flex justify-center gap-4 sm:gap-6 my-4 flex-wrap">
+                <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-xl border transition-all ${hasCustomBg ? 'bg-slate-800/90 border-slate-600 text-white hover:bg-slate-800' : 'bg-white border-stone-300 text-slate-800 hover:bg-stone-50'}`}>
                     <input type="radio" name="activityType" value="cognitive" checked={activityType === 'cognitive'} onChange={() => setActivityType('cognitive')} className="w-5 h-5 text-orange-600 focus:ring-orange-500 border-slate-400" />
-                    <span className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>Kognitif (Tanya Jawab)</span>
+                    <span className="font-bold text-sm">Kognitif (Tanya Jawab)</span>
                 </label>
-                <label className={`flex items-center gap-2 cursor-pointer p-2 rounded-md ${hasCustomBg ? 'hover:bg-black/20' : 'hover:bg-stone-200'}`}>
+                <label className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-xl border transition-all ${hasCustomBg ? 'bg-slate-800/90 border-slate-600 text-white hover:bg-slate-800' : 'bg-white border-stone-300 text-slate-800 hover:bg-stone-50'}`}>
                     <input type="radio" name="activityType" value="psychomotor" checked={activityType === 'psychomotor'} onChange={() => setActivityType('psychomotor')} className="w-5 h-5 text-orange-600 focus:ring-orange-500 border-slate-400" />
-                    <span className={`font-semibold ${hasCustomBg ? 'text-slate-200' : 'text-slate-700'}`}>Psikomotor (Praktik)</span>
+                    <span className="font-bold text-sm">Psikomotor (Praktik)</span>
                 </label>
             </div>
             <button
+                type="button"
                 onClick={handleGenerateActivities}
                 disabled={isGeneratingActivities || !subject || !topic || !grade}
-                className="w-full bg-orange-600 text-white font-bold text-lg py-3 rounded-lg hover:bg-orange-700 transition-all transform hover:scale-105 shadow disabled:bg-slate-400 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-orange-600 text-white font-extrabold text-lg py-3 rounded-xl hover:bg-orange-700 transition-all transform hover:scale-[1.02] shadow-lg disabled:bg-slate-600 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
             >
                 {isGeneratingActivities ? 'Sedang Membuat Aktivitas...' : 'Buat Aktivitas dengan AI'}
             </button>
 
             {/* Offline-ready activity presets */}
             {savedActivities.length > 0 && (
-              <div className={`mt-4 pt-4 border-t ${hasCustomBg ? 'border-white/15' : 'border-stone-200'} space-y-2`}>
+              <div className={`mt-5 pt-4 border-t ${hasCustomBg ? 'border-slate-700' : 'border-stone-200'} space-y-2`}>
                 <label className={`text-sm font-bold flex items-center gap-2 ${hasCustomBg ? 'text-sky-300' : 'text-sky-700'}`}>
                   <FolderOpen size={16} /> Gunakan Preset Tersimpan (Bisa Diakses Offline)
                 </label>
@@ -412,12 +413,13 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
                     <div 
                       key={p.id}
                       onClick={() => handleLoadPreset(p.id)}
-                      className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800/45 border-slate-600 text-white hover:bg-slate-700/50' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
+                      className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all hover:scale-105 ${hasCustomBg ? 'bg-slate-800 border-slate-600 text-white hover:bg-slate-700' : 'bg-white border-stone-200 text-slate-700 hover:bg-stone-50 hover:border-orange-300'}`}
                     >
-                      <span className="truncate max-w-[180px]">{p.title} <span className="text-[10px] opacity-60">({p.subject})</span></span>
+                      <span className="truncate max-w-[180px]">{p.title} <span className="text-[10px] opacity-75">({p.subject})</span></span>
                       <button 
+                        type="button"
                         onClick={(e) => handleDeletePreset(p.id, e)}
-                        className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
+                        className="text-red-400 hover:text-red-500 opacity-80 group-hover:opacity-100 transition-opacity p-0.5 ml-1"
                         title="Hapus Preset"
                       >
                         <Trash2 size={13} />
@@ -431,9 +433,9 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
           {/* Column 1: Activities Review */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2 mb-4">
-              <h2 className={`text-2xl font-semibold font-poppins ${hasCustomBg ? 'text-white border-white/20' : 'text-slate-700 border-stone-200'}`}>2. Tinjau Aktivitas Kotak</h2>
+          <div className={`p-5 rounded-2xl border ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : 'bg-stone-100/60 border-stone-200'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3 mb-4 border-slate-700/50">
+              <h2 className={`text-2xl font-extrabold font-poppins ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>2. Tinjau Aktivitas Kotak</h2>
               
               {/* Save Preset Feature */}
               {Object.keys(activities).length > 0 && (
@@ -512,21 +514,23 @@ Contoh format: [ { "square": 2, "activity": "Apa ibukota Indonesia?", "answerKey
           </div>
 
           {/* Column 2: Players & Special Squares */}
-          <div className="space-y-6">
-            <h2 className={`text-2xl font-semibold -mb-2 font-poppins ${hasCustomBg ? 'text-white' : 'text-slate-700'}`}>3. Atur Pemain & Papan</h2>
+          <div className={`p-5 rounded-2xl border space-y-6 ${hasCustomBg ? 'bg-slate-900/95 border-slate-700/90 shadow-xl text-white' : 'bg-stone-100/60 border-stone-200'}`}>
+            <h2 className={`text-2xl font-extrabold font-poppins pb-2 border-b border-slate-700/50 ${hasCustomBg ? 'text-amber-300' : 'text-slate-800'}`}>3. Atur Pemain & Papan</h2>
             
             {/* Players Setup */}
             <div>
-              <div className="flex gap-2 mb-4 bg-slate-100 p-1 rounded-lg w-fit">
+              <div className="flex gap-2 mb-4 bg-slate-800/80 p-1 rounded-xl w-fit border border-slate-700">
                 <button 
+                    type="button"
                     onClick={() => setInputMode('manual')}
-                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'manual' ? 'bg-white shadow text-orange-600' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-3.5 py-1 text-sm font-bold rounded-lg transition-colors ${inputMode === 'manual' ? 'bg-orange-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
                 >
                     Manual
                 </button>
                 <button 
+                    type="button"
                     onClick={() => setInputMode('class')}
-                    className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${inputMode === 'class' ? 'bg-white shadow text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`px-3.5 py-1 text-sm font-bold rounded-lg transition-colors ${inputMode === 'class' ? 'bg-emerald-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
                 >
                     Dari Kelas
                 </button>
